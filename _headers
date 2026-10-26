@@ -1,0 +1,10 @@
+# App en service worker nooit lang cachen, anders blijft na een update
+# een oude versie hangen op de toestellen van het team.
+/index.html
+  Cache-Control: no-cache
+/diagnose.html
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Cache-Control: no-cache

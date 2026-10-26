@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="licht">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Screenprotectors · Smartbar</title>
+<meta name="theme-color" content="#F4F5F7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Protectors">
+<style>
+/* Palet overgenomen uit de Weekplanner, zodat de Smartbar-apps
+   dezelfde huisstijl hebben. */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --surface-2:#F0F1F4;
+  --line:#E9EAEE; --line-strong:#D7D9E0;
+  --ink:#14151A; --ink-2:#3A3C45; --ink-3:#767B87;
+  --red:#DF0000; --red-2:#B80016; --red-tint:#FDECEC;
+  --action:#DF0000; --action-ink:#ffffff;
+  --ok:#15A24A; --warn:#F59E0B; --bad:#DF0000; --slate:#64748B;
+  --r:16px; --r-sm:12px;
+  --shadow:0 1px 2px rgba(20,21,26,.05), 0 6px 18px rgba(20,21,26,.05);
+  --shadow-lg:0 2px 6px rgba(20,21,26,.06), 0 18px 44px rgba(20,21,26,.11);
+}
+[data-theme="donker"]{
+  --bg:#101116; --surface:#191A20; --surface-2:#22232B;
+  --line:#2A2C35; --line-strong:#3C3F4A;
+  --ink:#F2F3F6; --ink-2:#B9BDC7; --ink-3:#868B96;
+  --red-tint:#3A1114;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  --shadow-lg:0 2px 8px rgba(0,0,0,.5), 0 20px 48px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font:400 15px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(74px + env(safe-area-inset-bottom));
+}
+h1,h2,h3,.cond{font-weight:800;letter-spacing:-.02em;margin:0}
+.num{font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:inherit}
+
+/* ---------- shell ---------- */
+.app{max-width:1080px;margin:0 auto;padding:0 14px}
+header.top{
+  position:sticky;top:0;z-index:40;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  padding:12px 0 10px;margin-bottom:16px;
+}
+.top-in{max-width:1080px;margin:0 auto;padding:0 14px;display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:baseline;gap:8px;min-width:0}
+.logo b{font-size:19px;font-weight:800;line-height:1.1;letter-spacing:-.02em;white-space:nowrap}
+.logo span{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
+.iconbtn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.iconbtn:hover{border-color:var(--line-strong)}
+.iconbtn svg{width:17px;height:17px;stroke:var(--ink-2);stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+.tabs-desktop{display:none;gap:2px;margin-left:14px}
+.tabs-desktop button{
+  padding:7px 13px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-2);
+}
+.tabs-desktop button[aria-current="page"]{background:var(--red-tint);color:var(--red)}
+@media(min-width:820px){
+  .tabs-desktop{display:flex}
+  body{padding-bottom:40px}
+  nav.bottom{display:none}
+}
+
+nav.bottom{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  display:grid;grid-template-columns:repeat(5,1fr);
+}
+nav.bottom button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;border-radius:10px;color:var(--ink-3)}
+nav.bottom button svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+nav.bottom button span{font-size:10.5px;font-weight:600;letter-spacing:.02em}
+nav.bottom button[aria-current="page"]{color:var(--red);background:var(--red-tint)}
+nav.bottom button[aria-current="page"] svg{stroke-width:2.2}
+
+/* ---------- primitives ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.card+.card{margin-top:14px}
+.card-h{padding:13px 15px 11px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.card-h h2{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.card-h .sub{font-size:11.5px;color:var(--ink-3);font-weight:500}
+.card-b{padding:15px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+label.fl{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:0 0 7px}
+.field+.field{margin-top:15px}
+input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);
+}
+textarea{resize:vertical;min-height:64px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 18px;border-radius:var(--r-sm);background:var(--action);color:var(--action-ink);
+  font-weight:700;font-size:14.5px;border:1px solid var(--action);
+  box-shadow:0 6px 16px rgba(200,0,20,.24);
+}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line-strong);box-shadow:none}
+.btn.sm{padding:8px 13px;font-size:13px}
+.btn.block{width:100%}
+.btn.big{width:100%;padding:16px;font-size:16px;font-weight:800;letter-spacing:-.01em;border-radius:var(--r-sm)}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  padding:9px 13px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);
+  font-size:13.5px;font-weight:550;line-height:1.2;
+}
+.chip:hover{border-color:var(--line-strong)}
+.chip[aria-pressed="true"]{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 6px 16px rgba(200,0,20,.24)}
+.chip.reden{display:flex;align-items:center;gap:8px;text-align:left}
+.chip.reden i{width:9px;height:9px;border-radius:2px;flex:none;background:var(--c)}
+.chip.reden[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#fff}
+.chip.reden[aria-pressed="true"] i{background:rgba(255,255,255,.85)}
+
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;width:max-content;background:var(--surface-2)}
+.stepper button{width:46px;height:46px;font-size:21px;font-weight:600;color:var(--ink-2)}
+.stepper button:hover{background:var(--surface)}
+.stepper output{min-width:52px;text-align:center;font-size:19px;font-weight:800;letter-spacing:-.02em;border-left:1px solid var(--line);border-right:1px solid var(--line);height:46px;line-height:46px}
+
+.muted{color:var(--ink-3)}
+.tiny{font-size:12px}
+.hint{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.empty{padding:34px 18px;text-align:center;color:var(--ink-3);font-size:13.5px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;background:var(--surface-2);border:1px solid var(--line)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--c,var(--ink-3))}
+
+/* ---------- signature: verliesbalk ---------- */
+.vb{display:flex;height:10px;border-radius:3px;overflow:hidden;background:var(--surface-2);border:1px solid var(--line)}
+.vb i{display:block;height:100%}
+.vlist{display:flex;flex-direction:column}
+.vrow{padding:12px 15px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:4px 12px}
+.vrow:last-child{border-bottom:none}
+.vrow .nm{font-weight:600;font-size:14px}
+.vrow .nm em{font-style:normal;color:var(--ink-3);font-weight:500}
+.vrow .tot{font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1;align-self:center}
+.vrow .bar{grid-column:1/-1;margin-top:5px}
+.vrow .brk{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:7px;font-size:11.5px;color:var(--ink-2)}
+.vrow .brk span{display:inline-flex;align-items:center;gap:5px}
+.vrow .brk i{width:8px;height:8px;border-radius:2px}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;box-shadow:var(--shadow)}
+.kpi .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--ink-3)}
+.kpi .v{font-size:29px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:5px}
+.kpi .s{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:800;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td.r,.tbl th.r{text-align:right}
+.scroll{overflow-x:auto}
+
+/* segmented */
+.seg{display:flex;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;flex-wrap:wrap}
+.seg button{padding:7px 12px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+/* afboek rows */
+.ab{display:flex;gap:12px;padding:12px 15px;border-bottom:1px solid var(--line);align-items:flex-start}
+.ab:last-child{border-bottom:none}
+.ab input[type=checkbox]{width:22px;height:22px;margin-top:2px;flex:none;accent-color:var(--ink)}
+.ab .m{flex:1;min-width:0}
+.ab .m b{font-weight:650;font-size:14px}
+.ab .m div{font-size:12px;color:var(--ink-3);margin-top:3px}
+.ab .q{font-size:17px;font-weight:800;letter-spacing:-.02em}
+
+.sticky-act{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom));z-index:20;padding:11px;background:var(--surface);border-top:1px solid var(--line);border-radius:0 0 var(--r) var(--r);display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+@media(min-width:820px){.sticky-act{bottom:0}}
+
+/* toast + modal */
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom));z-index:200;display:flex;flex-direction:column;gap:8px;width:min(440px,calc(100vw - 24px))}
+@media(min-width:820px){#toasts{bottom:20px}}
+.toast{background:var(--action);color:var(--action-ink);padding:12px 15px;border-radius:10px;font-size:13.5px;font-weight:550;box-shadow:0 10px 30px -8px rgba(0,0,0,.4);animation:pop .22s ease}
+.toast.bad{background:var(--bad);color:#fff}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.modal{position:fixed;inset:0;z-index:300;background:rgba(10,16,22,.55);display:grid;place-items:center;padding:16px}
+.modal .box{background:var(--surface);border:1px solid var(--line);border-radius:14px;width:min(400px,100%);padding:20px;box-shadow:0 20px 60px -20px rgba(0,0,0,.5)}
+.hidden{display:none!important}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo">
+      <b>Screenprotectors</b>
+      <span id="ctx">Smartbar · verlies &amp; afboeken</span>
+    </div>
+    <div class="tabs-desktop" id="tabsDesktop"></div>
+    <div class="top-actions">
+      <button class="iconbtn" id="btnTheme" title="Thema" aria-label="Thema wisselen">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>
+      </button>
+      <button class="iconbtn" id="btnSync" title="Verversen" aria-label="Verversen">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+      </button>
+      <button class="iconbtn hidden" id="btnUit" title="Uitloggen" aria-label="Uitloggen" onclick="uitloggen()">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="app" id="main"></main>
+
+<nav class="bottom" id="tabsMobile"></nav>
+<div id="toasts"></div>
+<div id="modalHost"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const SB_URL = "https://ykhkijmlcbljwutartts.supabase.co";
+const SB_KEY = "sb_publishable_x_8o2POMAF1mTe0W2DdkIA_OO63x48m";
+const BUILD = "2026-09-08-een-bestand";
+
+/* Kleine REST-laag op PostgREST.
+   Bewust geen supabase-js: die stuurt een Headers-object mee, en sandboxes die
+   fetch onderscheppen kunnen dat niet doorgeven (DataCloneError). Gewone
+   objecten werken overal, en het scheelt een externe CDN-afhankelijkheid. */
+class Vraag {
+  constructor(tabel){
+    this.tabel=tabel; this.methode="GET"; this.cols="*";
+    this.filters=[]; this.ordening=[]; this.max=null;
+    this.body=null; this.prefer=[]; this.enkel=false;
+  }
+  select(cols){ if(cols) this.cols=cols; if(this.methode!=="GET") this.prefer.push("return=representation"); return this; }
+  insert(v){ this.methode="POST"; this.body=v; this.prefer.push("return=representation"); return this; }
+  upsert(v){ this.methode="POST"; this.body=v; this.prefer.push("resolution=merge-duplicates","return=representation"); return this; }
+  update(v){ this.methode="PATCH"; this.body=v; this.prefer.push("return=representation"); return this; }
+  delete(){ this.methode="DELETE"; return this; }
+  eq(kol,val){ this.filters.push(encodeURIComponent(kol)+"=eq."+encodeURIComponent(val)); return this; }
+  in(kol,arr){ this.filters.push(encodeURIComponent(kol)+"=in.("+arr.map(v=>'"'+String(v).replace(/"/g,'')+'"').join(",")+")"); return this; }
+  order(kol,opt){ this.ordening.push(kol+"."+((opt&&opt.ascending===false)?"desc":"asc")); return this; }
+  limit(n){ this.max=n; return this; }
+  maybeSingle(){ this.enkel=true; return this; }
+  then(ok,fout){ return this.run().then(ok,fout); }
+
+  url(){
+    const p=[];
+    if(this.methode==="GET") p.push("select="+encodeURIComponent(this.cols));
+    p.push(...this.filters);
+    if(this.ordening.length) p.push("order="+encodeURIComponent(this.ordening.join(",")));
+    if(this.max) p.push("limit="+this.max);
+    return SB_URL+"/rest/v1/"+this.tabel+(p.length?"?"+p.join("&"):"");
+  }
+
+  async run(){
+    const headers={ apikey:SB_KEY, Authorization:"Bearer "+SB_KEY };
+    if(this.body!==null) headers["Content-Type"]="application/json";
+    if(this.prefer.length) headers["Prefer"]=this.prefer.join(",");
+    let res;
+    try{
+      res = await fetch(this.url(), {
+        method:this.methode, headers,
+        body: this.body===null ? undefined : JSON.stringify(this.body),
+      });
+    }catch(e){
+      return { data:null, error:{ message:"Geen verbinding met de server.", oorzaak:String(e&&e.message||e) } };
+    }
+    const tekst = await res.text().catch(()=>"");
+    let json=null;
+    if(tekst){ try{ json=JSON.parse(tekst); }catch(e){ json=null; } }
+    if(!res.ok){
+      return { data:null, error:{
+        message:(json&&(json.message||json.hint))||("Serverfout "+res.status),
+        code:json&&json.code, details:json&&json.details, status:res.status } };
+    }
+    let data = json;
+    if(this.enkel) data = Array.isArray(json) ? (json[0]||null) : (json||null);
+    return { data, error:null };
+  }
+}
+const db = { from: tabel => new Vraag(tabel) };
+
+const REDENEN = [
+  { id:"misplakker",       label:"Misplakker",            groep:"Training",    kleur:"#DF0000", hint:"Scheef, stof of bubbel bij het plakken" },
+  { id:"klachtcompensatie",label:"Klachtcompensatie",     groep:"Commercieel", kleur:"#7C5CD6", hint:"Weggegeven om een klacht op te lossen" },
+  { id:"garantie",         label:"Garantie / productfout",groep:"Product",     kleur:"#2A7FB8", hint:"Slechte kleeflaag, kras, barst uit zichzelf" },
+  { id:"administratie",    label:"Administratieve fout",  groep:"Proces",      kleur:"#F59E0B", hint:"Niet of verkeerd afgerekend of geboekt" },
+  { id:"beschadigd",       label:"Beschadigd ontvangen",  groep:"Product",     kleur:"#0E7C86", hint:"Al kapot uit de verpakking" },
+  { id:"demo",             label:"Demo / test",           groep:"Intern",      kleur:"#15A24A", hint:"Gebruikt voor uitleg of een testtoestel" },
+  { id:"overig",           label:"Overig",                groep:"Overig",      kleur:"#64748B", hint:"Leg uit in de notitie" },
+];
+const REDEN = Object.fromEntries(REDENEN.map(r=>[r.id,r]));
+const redenLabel = id => (REDEN[id]?.label) || id;
+const redenKleur = id => (REDEN[id]?.kleur) || "#64748B";
+
+const ICONS = {
+  registreren:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8.5 8.5h7M8.5 12.5h7M8.5 16.5h4"/></svg>',
+  overzicht:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  afboeken:'<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>',
+  telling:'<svg viewBox="0 0 24 24"><path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1z"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="m9 13 2 2 4-4"/></svg>',
+  beheer:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>',
+};
+
+const TABS = [
+  { id:"registreren", label:"Registreren", tl:false },
+  { id:"overzicht",   label:"Overzicht",   tl:true  },
+  { id:"afboeken",    label:"Afboeken",    tl:true  },
+  { id:"telling",     label:"Telling",     tl:true  },
+  { id:"beheer",      label:"Beheer",      tl:true  },
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const S = {
+  tab: "registreren",
+  producten: [],
+  medewerkers: [],
+  registraties: [],
+  barcodes: {},
+  zoek: "",
+  scanState: null,
+  koppelCode: null,
+  laden: true,
+  fout: null,
+  verouderd: false,
+  form: { product:null, reden:null, aantal:1, medewerker:"", referentie:"", notitie:"", datum:vandaag() },
+  periode: "week",
+  vanaf: null, tot: null,
+  selectie: new Set(),
+  abFilter: "open",
+  tellingen: [],
+  telVoorbeeld: null,
+};
+
+const LS = {
+  get:(k,d)=>{ try{ const v=localStorage.getItem(k); return v===null?d:JSON.parse(v); }catch(e){ return d; } },
+  set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} },
+};
+
+// Sessie: wie is er ingelogd. 12 uur geldig, zodat iemand op zijn eigen
+// telefoon niet elke keer opnieuw hoeft, maar een gedeelde tablet 's nachts
+// wel vrijvalt.
+const SESSIE_UREN = 12;
+function sessie(){
+  const s = LS.get("sp_sessie", null);
+  if(!s || !s.op || (Date.now()-s.op) > SESSIE_UREN*3600*1000){ return null; }
+  return s;
+}
+function zetSessie(naam, id, rol){
+  LS.set("sp_sessie", { naam, id, rol, op: Date.now() });
+}
+function uitloggen(){
+  LS.set("sp_sessie", null);
+  S.tab="registreren"; S.form={ product:null, reden:null, aantal:1, medewerker:"", referentie:"", notitie:"", datum:vandaag() };
+  S.zoek=""; render();
+}
+const isTL = () => { const s=sessie(); return !!s && s.rol==="teamleider"; };
+const ingelogd = () => sessie();
+
+async function hashPin(code){
+  const data = new TextEncoder().encode("smartbar-protectors:"+String(code).trim());
+  const buf = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function vandaag(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function esc(s){ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function dOnly(s){ return String(s||"").slice(0,10); }
+function nlDatum(s){
+  const d = new Date(dOnly(s)+"T12:00:00");
+  if(isNaN(d)) return dOnly(s);
+  return d.toLocaleDateString("nl-NL",{day:"numeric",month:"short",year:"numeric"});
+}
+function nlKort(s){
+  const d = new Date(dOnly(s)+"T12:00:00");
+  if(isNaN(d)) return dOnly(s);
+  return d.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"});
+}
+function isoWeek(dstr){
+  const d = new Date(dOnly(dstr)+"T12:00:00");
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dag = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - dag);
+  const jan1 = new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return { jaar: t.getUTCFullYear(), week: Math.ceil((((t-jan1)/86400000)+1)/7) };
+}
+function maandagVan(d){
+  const x = new Date(d); const dag = (x.getDay()+6)%7;
+  x.setDate(x.getDate()-dag); x.setHours(12,0,0,0); return x;
+}
+function periodeRange(){
+  const nu = new Date(); nu.setHours(12,0,0,0);
+  const f = d => d.toISOString().slice(0,10);
+  if(S.periode==="week"){ const m=maandagVan(nu); const z=new Date(m); z.setDate(z.getDate()+6); return [f(m),f(z)]; }
+  if(S.periode==="vorige"){ const m=maandagVan(nu); m.setDate(m.getDate()-7); const z=new Date(m); z.setDate(z.getDate()+6); return [f(m),f(z)]; }
+  if(S.periode==="maand"){ return [f(new Date(nu.getFullYear(),nu.getMonth(),1)), f(new Date(nu.getFullYear(),nu.getMonth()+1,0))]; }
+  if(S.periode==="jaar"){ return [f(new Date(nu.getFullYear(),0,1)), f(new Date(nu.getFullYear(),11,31))]; }
+  if(S.periode==="alles"){ return ["2000-01-01", f(nu)]; }
+  return [S.vanaf||f(nu), S.tot||f(nu)];
+}
+function periodeLabel(){
+  const [a,b]=periodeRange();
+  if(S.periode==="week"){ const w=isoWeek(a); return "Week "+w.week+" · "+nlKort(a)+" t/m "+nlKort(b); }
+  if(S.periode==="vorige"){ const w=isoWeek(a); return "Week "+w.week+" · "+nlKort(a)+" t/m "+nlKort(b); }
+  if(S.periode==="maand") return new Date(a+"T12:00:00").toLocaleDateString("nl-NL",{month:"long",year:"numeric"});
+  if(S.periode==="jaar") return String(new Date(a+"T12:00:00").getFullYear());
+  if(S.periode==="alles") return "Alle registraties";
+  return nlDatum(a)+" t/m "+nlDatum(b);
+}
+function inPeriode(r){ const [a,b]=periodeRange(); const d=dOnly(r.datum); return d>=a && d<=b; }
+function som(arr,f){ return arr.reduce((t,x)=>t+(f?f(x):x),0); }
+
+function toast(msg, bad){
+  const el=document.createElement("div");
+  el.className="toast"+(bad?" bad":""); el.textContent=msg;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(()=>{ el.style.opacity="0"; el.style.transition="opacity .25s"; setTimeout(()=>el.remove(),260); }, bad?4200:2300);
+}
+
+/* ============================================================
+   OUTBOX (offline)
+   ============================================================ */
+function outbox(){ return LS.get("sp_outbox",[]); }
+function outboxAdd(rec){ const o=outbox(); o.push(rec); LS.set("sp_outbox",o); }
+async function outboxFlush(stil){
+  const o=outbox(); if(!o.length) return 0;
+  const gelukt=[];
+  for(const rec of o){
+    const { error } = await db.from("sp_registraties").insert(rec);
+    if(error) break;
+    gelukt.push(rec);
+  }
+  if(gelukt.length){
+    LS.set("sp_outbox", o.slice(gelukt.length));
+    if(!stil) toast(gelukt.length+" wachtende registratie(s) gesynchroniseerd");
+  }
+  return gelukt.length;
+}
+
+/* ============================================================
+   DATA
+   ============================================================ */
+async function laadAlles(){
+  S.laden=true; S.fout=null; render();
+  try{
+    const [p,m,r,bc,inst,tl] = await Promise.all([
+      db.from("sp_producten").select("*").order("sortering").order("omschrijving"),
+      db.from("sp_medewerkers").select("*").order("naam"),
+      db.from("sp_registraties").select("*").order("datum",{ascending:false}).order("created_at",{ascending:false}).limit(4000),
+      db.from("sp_barcodes").select("*"),
+      db.from("sp_instellingen").select("*"),
+      db.from("sp_tellingen").select("*").order("teldatum",{ascending:false}).limit(3000),
+    ]);
+    if(p.error) throw p.error; if(m.error) throw m.error; if(r.error) throw r.error;
+    S.producten=p.data||[]; S.medewerkers=m.data||[]; S.registraties=r.data||[];
+    S.barcodes={}; (bc.data||[]).forEach(b=>{ S.barcodes[b.code]=b.product_id; });
+    S.instellingen={}; (inst.data||[]).forEach(i=>{ S.instellingen[i.sleutel]=i.waarde; });
+    S.tellingen = tl.error ? [] : (tl.data||[]);
+    S.fout=null; S.verouderd=false;
+    LS.set("sp_cache", { op:Date.now(), producten:S.producten, medewerkers:S.medewerkers,
+      registraties:S.registraties, barcodes:S.barcodes, instellingen:S.instellingen,
+      tellingen:S.tellingen });
+    const n = await outboxFlush(true);
+    if(n){ const r2 = await db.from("sp_registraties").select("*").order("datum",{ascending:false}).limit(4000); if(!r2.error) S.registraties=r2.data||[]; }
+  }catch(e){
+    // Geen verbinding: val terug op de laatst opgehaalde gegevens, zodat
+    // registreren én overzicht blijven werken op de winkelvloer.
+    const cache = LS.get("sp_cache",null);
+    if(cache && cache.producten && cache.producten.length){
+      S.producten=cache.producten; S.medewerkers=cache.medewerkers||[]; S.registraties=cache.registraties||[];
+      S.barcodes=cache.barcodes||{}; S.instellingen=cache.instellingen||{};
+      S.tellingen=cache.tellingen||[];
+      S.verouderd = cache.op || true; S.fout=null;
+    } else {
+      S.fout = e.message || "Geen verbinding met de database.";
+    }
+  }finally{
+    S.laden=false; render();
+  }
+}
+
+async function haalPin(){
+  const { data, error } = await db.from("sp_instellingen").select("waarde").eq("sleutel","pincode").maybeSingle();
+  if(error) return null;
+  return data?.waarde || null;
+}
+
+/* ============================================================
+   RENDER — shell
+   ============================================================ */
+function render(){
+  renderTabs();
+  const m=document.getElementById("main");
+  if(S.laden){ m.innerHTML = skelet(); return; }
+  if(S.fout){
+    m.innerHTML = `<div class="card"><div class="card-b">
+      <h2 style="font-size:16px">Geen verbinding</h2>
+      <p class="hint" style="margin-top:8px">${esc(S.fout)}</p>
+      <p class="hint">Dit gebeurt bijna altijd doordat de pagina niet vanaf een echte website wordt geopend. Werkt hij niet, open dan <b>diagnose.html</b> ernaast — die vertelt precies wat er blokkeert.</p>
+      <p class="hint">Registraties die je nu invult worden op dit toestel bewaard en later automatisch gesynchroniseerd.</p>
+      <div class="row" style="margin-top:14px">
+        <button class="btn sm" onclick="laadAlles()">Opnieuw proberen</button>
+        <button class="btn sm ghost" onclick="S.fout=null;render()">Toch registreren</button>
+      </div>
+      <p class="tiny muted" style="margin-top:12px">versie ${BUILD}</p>
+      </div></div>`;
+    return;
+  }
+  if(!ingelogd()){ m.innerHTML = inlogScherm(); return; }
+  const tab = TABS.find(t=>t.id===S.tab);
+  if(tab && tab.tl && !isTL()){ m.innerHTML = geenToegang(); return; }
+  let inhoud = "";
+  if(S.verouderd){
+    const wanneer = typeof S.verouderd==="number" ? new Date(S.verouderd).toLocaleString("nl-NL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : null;
+    inhoud += `<div class="card" style="border-color:var(--warn)"><div class="card-b" style="padding:11px 14px">
+      <div class="tiny" style="font-weight:600">Offline — je ziet de laatst opgehaalde gegevens${wanneer?" van "+esc(wanneer):""}.</div>
+      <div class="tiny muted" style="margin-top:3px">Nieuwe registraties worden bewaard en later gesynchroniseerd.
+        <button onclick="laadAlles()" style="text-decoration:underline;font:inherit">Nu opnieuw proberen</button></div>
+    </div></div>`;
+  }
+  if(S.koppelCode){ inhoud += koppelUI(); m.innerHTML = inhoud; return; }
+  if(S.tab==="registreren") inhoud += viewRegistreren();
+  else if(S.tab==="overzicht") inhoud += viewOverzicht();
+  else if(S.tab==="afboeken") inhoud += viewAfboeken();
+  else if(S.tab==="telling") inhoud += viewTelling();
+  else inhoud += viewBeheer();
+  m.innerHTML = inhoud;
+  const wacht = outbox().length;
+  const sess = sessie();
+  const uitBtn = document.getElementById("btnUit");
+  if(uitBtn) uitBtn.classList.toggle("hidden", !sess);
+  document.getElementById("ctx").textContent = wacht
+    ? (wacht+" wacht op sync")
+    : (sess ? sess.naam + (sess.rol==="teamleider" ? " · teamleider" : "") : "Smartbar · verlies & afboeken");
+}
+
+function renderTabs(){
+  const d=document.getElementById("tabsDesktop"), mo=document.getElementById("tabsMobile");
+  const zichtbaar = TABS.filter(t=>!t.tl || isTL());
+  const nav=document.querySelector("nav.bottom");
+  if(nav) nav.style.gridTemplateColumns = "repeat("+Math.max(1,zichtbaar.length)+",1fr)";
+  if(!ingelogd()){ d.innerHTML=""; if(nav) nav.style.display="none"; return; }
+  if(nav) nav.style.display="grid";
+  d.innerHTML = zichtbaar.map(t=>`<button onclick="ga('${t.id}')" ${S.tab===t.id?'aria-current="page"':""}>${t.label}</button>`).join("");
+  mo.innerHTML = zichtbaar.map(t=>`<button onclick="ga('${t.id}')" ${S.tab===t.id?'aria-current="page"':""}>${ICONS[t.id]}<span>${t.label}</span></button>`).join("");
+}
+function ga(t){ S.tab=t; S.selectie=new Set(); window.scrollTo(0,0); render(); }
+
+function skelet(){
+  return `<div class="card"><div class="card-b">
+    ${[0,1,2].map(()=>`<div style="height:14px;border-radius:5px;background:var(--surface-2);margin-bottom:11px;animation:pulse 1.3s infinite"></div>`).join("")}
+    <div style="height:44px;border-radius:9px;background:var(--surface-2)"></div>
+  </div></div><style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}</style>`;
+}
+
+/* ============================================================
+   PIN
+   ============================================================ */
+function inlogScherm(){
+  const zonderPin = S.producten.length ? "" : "";
+  return `<div class="card" style="max-width:400px;margin:0 auto">
+    <div class="card-h"><h2>Inloggen</h2></div>
+    <div class="card-b">
+      <p class="hint" style="margin:0 0 14px">Vul je eigen pincode in. Je registraties komen dan automatisch op jouw naam te staan.</p>
+      <div class="field"><label class="fl" for="pin">Pincode</label>
+        <input type="password" id="pin" inputmode="numeric" autocomplete="off" placeholder="••••"
+               onkeydown="if(event.key==='Enter')doeInlog()">
+      </div>
+      <button class="btn block" style="margin-top:14px" onclick="doeInlog()">Inloggen</button>
+      <p class="hint" style="text-align:center;margin-top:12px">Geen code? Vraag je teamleider.</p>
+    </div></div>`;
+}
+
+function geenToegang(){
+  const s=sessie();
+  return `<div class="card" style="max-width:400px;margin:0 auto">
+    <div class="card-h"><h2>Geen toegang</h2></div>
+    <div class="card-b">
+      <p class="hint" style="margin:0 0 14px">Dit onderdeel is alleen voor de teamleider. Je bent ingelogd als <b>${esc(s?s.naam:"")}</b>.</p>
+      <button class="btn block" onclick="ga('registreren')">Terug naar registreren</button>
+      <button class="btn block ghost" style="margin-top:8px" onclick="uitloggen()">Uitloggen</button>
+    </div></div>`;
+}
+
+async function doeInlog(){
+  const el=document.getElementById("pin");
+  const code=(el?.value||"").trim();
+  if(!code) return;
+  const knop=document.querySelector("button.btn.block");
+  if(knop){ knop.disabled=true; knop.textContent="Controleren…"; }
+  try{
+    const h=await hashPin(code);
+    // 1. medewerker met eigen pincode
+    const mw=S.medewerkers.find(m=>m.actief && m.pincode_hash===h);
+    if(mw){
+      zetSessie(mw.naam, mw.id, mw.rol||"medewerker");
+      db.from("sp_medewerkers").update({laatste_login:new Date().toISOString()}).eq("id",mw.id).then(()=>{},()=>{});
+      toast("Welkom "+mw.naam);
+      S.tab="registreren"; render(); return;
+    }
+    // 2. hoofdpincode van de teamleider
+    const master = (S.instellingen||{}).pincode;
+    if(master && code===master){
+      zetSessie((S.instellingen.aanvrager_naam||"Teamleider"), null, "teamleider");
+      toast("Ingelogd als teamleider");
+      S.tab="registreren"; render(); return;
+    }
+    toast("Onjuiste pincode", true);
+    if(el){ el.value=""; el.focus(); }
+  }catch(e){
+    toast("Inloggen mislukt: "+e.message, true);
+  }finally{
+    if(knop){ knop.disabled=false; knop.textContent="Inloggen"; }
+  }
+}
+
+/* ============================================================
+   VIEW — REGISTREREN
+   ============================================================ */
+function artZoek(q){
+  const t=(q||"").trim().toLowerCase();
+  let lijst=S.producten.filter(p=>p.actief);
+  if(!t) return lijst.slice(0,0);
+  const woorden=t.split(/\s+/);
+  return lijst.filter(p=>{
+    const h=((p.artikelnummer||"")+" "+(p.omschrijving||"")+" "+(p.merk||"")+" "+(p.soort||"")).toLowerCase();
+    return woorden.every(w=>h.includes(w));
+  }).slice(0,25);
+}
+function recenteArtikelen(){
+  const gezien=[], uit=[];
+  for(const r of S.registraties){
+    if(!r.artikelnummer || gezien.includes(r.artikelnummer)) continue;
+    const p=S.producten.find(x=>x.artikelnummer===r.artikelnummer && x.actief);
+    if(p){ gezien.push(r.artikelnummer); uit.push(p); }
+    if(uit.length>=6) break;
+  }
+  return uit;
+}
+function artKaart(p){
+  return `<div style="display:flex;gap:11px;align-items:flex-start;padding:12px 13px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2)">
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-size:14px;line-height:1.3">${esc(p.omschrijving||(p.merk+" "+p.soort))}</div>
+      <div class="tiny muted" style="margin-top:3px">Art. ${esc(p.artikelnummer||"—")} · ${esc(p.soort||"")}${p.prijs!=null?" · &euro; "+Number(p.prijs).toFixed(2).replace(".",","):""}</div>
+    </div>
+    <button class="btn sm ghost" onclick="kiesArtikel(null)">Wijzig</button>
+  </div>`;
+}
+
+function viewRegistreren(){
+  const f=S.form;
+  const mws=S.medewerkers.filter(m=>m.actief);
+  const laatste=S.registraties.slice(0,6);
+  const klaar=f.product && f.reden;
+
+  if(!S.producten.filter(p=>p.actief).length){
+    return `<div class="card"><div class="card-b"><h2 style="font-size:16px">Nog geen artikelen</h2>
+      <p class="hint">Voeg eerst artikelen toe bij Beheer.</p>
+      <button class="btn sm" style="margin-top:12px" onclick="ga('beheer')">Naar beheer</button></div></div>`;
+  }
+
+  const treffers = artZoek(S.zoek);
+  const recent = recenteArtikelen();
+
+  return `
+  <div class="card">
+    <div class="card-h"><h2>Nieuwe registratie</h2><span class="sub" style="margin-left:auto">${esc(nlKort(f.datum))}</span></div>
+    <div class="card-b">
+
+      <div class="field">
+        <label class="fl">1 &middot; Welk artikel</label>
+        ${f.product ? artKaart(f.product) : `
+          <button class="btn block" style="padding:15px" onclick="startScan()">
+            <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M11 8v8M15 8v8M18 8v8"/></svg>
+            Barcode scannen
+          </button>
+          <div style="display:flex;align-items:center;gap:10px;margin:12px 0">
+            <div style="flex:1;height:1px;background:var(--line)"></div>
+            <span class="tiny muted">of zoek zelf</span>
+            <div style="flex:1;height:1px;background:var(--line)"></div>
+          </div>
+          <input type="text" id="zoek" placeholder="Artikelnummer of naam, bijv. 16 pro of 1885198"
+                 value="${esc(S.zoek)}" oninput="S.zoek=this.value;hertekenZoek()" autocomplete="off">
+          <div id="zoekUit">${zoekResultaatHtml(treffers, recent)}</div>
+        `}
+      </div>
+
+      ${f.product?`<div class="field">
+        <label class="fl">2 &middot; Wat is er gebeurd?</label>
+        <div class="chips">${REDENEN.map(r=>
+          `<button class="chip reden" style="--c:${r.kleur}" aria-pressed="${f.reden===r.id}" onclick="setF('reden','${r.id}')"><i></i>${r.label}</button>`).join("")}</div>
+        ${f.reden&&REDEN[f.reden].hint?`<p class="hint">${esc(REDEN[f.reden].hint)}</p>`:""}
+      </div>`:""}
+
+      ${f.reden?`
+      <div class="field">
+        <label class="fl">3 &middot; Aantal</label>
+        <div class="stepper">
+          <button onclick="setAantal(-1)" aria-label="Minder">&minus;</button>
+          <output class="num">${f.aantal}</output>
+          <button onclick="setAantal(1)" aria-label="Meer">+</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="fl" for="ref">Bon / ticket / klantnummer <span style="font-weight:500;letter-spacing:0;text-transform:none">&mdash; optioneel</span></label>
+        <input type="text" id="ref" value="${esc(f.referentie)}" oninput="S.form.referentie=this.value" placeholder="bijv. bonnummer of RMA">
+      </div>
+
+      <div class="field">
+        <label class="fl" for="not">Notitie <span style="font-weight:500;letter-spacing:0;text-transform:none">&mdash; optioneel</span></label>
+        <textarea id="not" oninput="S.form.notitie=this.value" placeholder="Wat ging er precies mis?">${esc(f.notitie)}</textarea>
+      </div>
+
+      <div class="field">
+        <label class="fl" for="dat">Datum</label>
+        <input type="date" id="dat" value="${esc(f.datum)}" max="${vandaag()}" onchange="S.form.datum=this.value">
+      </div>
+      `:""}
+
+      <button class="btn big" style="margin-top:20px" ${klaar?"":"disabled"} onclick="opslaan(this)">
+        ${klaar?"Registreren":(f.product?"Kies wat er gebeurd is":"Kies eerst een artikel")}
+      </button>
+      <p class="hint" style="text-align:center">Je kunt een registratie binnen 10 minuten zelf nog terugdraaien.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Laatst geregistreerd</h2></div>
+    ${laatste.length?`<div>${laatste.map(r=>{
+      const vers=(Date.now()-new Date(r.created_at).getTime())<10*60*1000;
+      return `<div class="ab">
+        <div class="m">
+          <b>${esc(r.omschrijving||((r.merk||"")+" "+(r.soort||"")))}</b>
+          <div><span class="pill" style="--c:${redenKleur(r.reden)}"><i></i>${esc(redenLabel(r.reden))}</span>
+          &nbsp;${esc(nlKort(r.datum))}${r.artikelnummer?" &middot; art. "+esc(r.artikelnummer):""}${r.medewerker?" &middot; "+esc(r.medewerker):""}${r.afgeboekt?" &middot; afgeboekt":""}</div>
+        </div>
+        <div class="q num">${r.aantal}&times;</div>
+        ${vers&&!r.afgeboekt?`<button class="btn sm ghost" onclick="verwijder('${r.id}')">Terug</button>`:""}
+      </div>`;}).join("")}</div>`
+    :`<div class="empty">Nog niets geregistreerd.</div>`}
+  </div>`;
+}
+
+function zoekResultaatHtml(treffers, recent){
+  if(S.zoek.trim()){
+    if(!treffers.length) return `<p class="hint">Geen artikel gevonden voor &ldquo;${esc(S.zoek)}&rdquo;.</p>`;
+    return `<div style="margin-top:10px;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden">
+      ${treffers.map(p=>`<button style="display:block;width:100%;text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);background:var(--surface)"
+        onclick="kiesArtikelId('${p.id}')">
+        <div style="font-weight:650;font-size:13.5px">${esc(p.omschrijving||"")}</div>
+        <div class="tiny muted">Art. ${esc(p.artikelnummer||"")} &middot; ${esc(p.soort||"")}</div>
+      </button>`).join("")}</div>`;
+  }
+  if(!recent.length) return "";
+  return `<div style="margin-top:12px">
+    <div class="fl" style="font-size:10.5px">Laatst gebruikt</div>
+    <div class="chips">${recent.map(p=>`<button class="chip" onclick="kiesArtikelId('${p.id}')" style="text-align:left">
+      ${esc((p.omschrijving||"").replace(/^ISY /,""))}</button>`).join("")}</div>
+  </div>`;
+}
+function hertekenZoek(){
+  const el=document.getElementById("zoekUit");
+  if(el) el.innerHTML = zoekResultaatHtml(artZoek(S.zoek), recenteArtikelen());
+}
+function kiesArtikel(p){ S.form.product=p; if(!p){ S.form.reden=null; } S.zoek=""; render(); }
+function kiesArtikelId(id){ kiesArtikel(S.producten.find(p=>p.id===id)||null); }
+
+function setAantal(delta){
+  S.form.aantal = Math.min(99, Math.max(1, (S.form.aantal||1) + delta));
+  render();
+}
+function setF(k,v){
+  S.form[k] = (S.form[k]===v ? null : v);
+  render();
+}
+
+async function opslaan(btn){
+  const f=S.form, p=f.product;
+  const sess=sessie()||{};
+  const naam=(sess.naam||"").trim();
+  const rec = {
+    datum: f.datum, product_id: p.id,
+    artikelnummer: p.artikelnummer||null, omschrijving: p.omschrijving||null,
+    prijs: p.prijs!=null?Number(p.prijs):null,
+    merk: p.merk||null, soort: p.soort||null,
+    aantal: f.aantal, reden: f.reden,
+    medewerker: naam||null, medewerker_id: sess.id||null,
+    referentie: (f.referentie||"").trim()||null,
+    notitie: (f.notitie||"").trim()||null,
+  };
+  btn.disabled=true; btn.textContent="Bezig\u2026";
+  const { error } = await db.from("sp_registraties").insert(rec);
+  if(error){
+    outboxAdd(rec);
+    toast("Geen verbinding \u2014 bewaard op dit toestel, wordt later gesynct.", true);
+  } else {
+    toast(rec.aantal+"\u00d7 "+(p.omschrijving||p.soort)+" geregistreerd");
+  }
+  S.form={ product:null, reden:null, aantal:1, medewerker:"", referentie:"", notitie:"", datum:vandaag() };
+  S.zoek="";
+  await laadAlles();
+}
+
+async function verwijder(id){
+  const { error } = await db.from("sp_registraties").delete().eq("id",id);
+  if(error) return toast("Terugdraaien mislukt: "+error.message, true);
+  toast("Registratie teruggedraaid");
+  await laadAlles();
+}
+
+/* ============================================================
+   VIEW — OVERZICHT
+   ============================================================ */
+function periodeBalk(){
+  const opties=[["week","Deze week"],["vorige","Vorige week"],["maand","Deze maand"],["jaar","Dit jaar"],["alles","Alles"],["custom","Aangepast"]];
+  return `<div class="seg" style="margin-bottom:12px">
+    ${opties.map(([v,l])=>`<button aria-pressed="${S.periode===v}" onclick="S.periode='${v}';S.selectie=new Set();render()">${l}</button>`).join("")}
+  </div>
+  ${S.periode==="custom"?`<div class="row" style="margin-bottom:12px">
+    <div style="flex:1;min-width:140px"><label class="fl">Van</label><input type="date" value="${esc(S.vanaf||vandaag())}" onchange="S.vanaf=this.value;render()"></div>
+    <div style="flex:1;min-width:140px"><label class="fl">Tot</label><input type="date" value="${esc(S.tot||vandaag())}" onchange="S.tot=this.value;render()"></div>
+  </div>`:""}`;
+}
+
+function viewOverzicht(){
+  const rs = S.registraties.filter(inPeriode);
+  const totaal = som(rs,r=>r.aantal);
+  const open = som(rs.filter(r=>!r.afgeboekt), r=>r.aantal);
+
+  // per reden
+  const perReden = {};
+  rs.forEach(r=>{ perReden[r.reden]=(perReden[r.reden]||0)+r.aantal; });
+  const redenSorted = Object.entries(perReden).sort((a,b)=>b[1]-a[1]);
+  const topReden = redenSorted[0];
+
+  // per groep (verantwoordelijkheid)
+  const perGroep = {};
+  rs.forEach(r=>{ const g=REDEN[r.reden]?.groep||"Overig"; perGroep[g]=(perGroep[g]||0)+r.aantal; });
+
+  // per product
+  const perProd = {};
+  rs.forEach(r=>{
+    const k=r.artikelnummer||((r.merk||"")+"|"+(r.soort||""));
+    perProd[k] = perProd[k] || { nr:r.artikelnummer, naam:r.omschrijving||((r.merk||"")+" "+(r.soort||"")), soort:r.soort, tot:0, red:{} };
+    perProd[k].tot += r.aantal;
+    perProd[k].red[r.reden]=(perProd[k].red[r.reden]||0)+r.aantal;
+  });
+  const prodSorted = Object.values(perProd).sort((a,b)=>b.tot-a.tot);
+
+  // per medewerker (alleen misplakkers + administratie = beïnvloedbaar)
+  const perMw = {};
+  rs.forEach(r=>{
+    const n=(r.medewerker||"Niet ingevuld");
+    perMw[n]=perMw[n]||{naam:n,tot:0,mis:0,adm:0};
+    perMw[n].tot+=r.aantal;
+    if(r.reden==="misplakker") perMw[n].mis+=r.aantal;
+    if(r.reden==="administratie") perMw[n].adm+=r.aantal;
+  });
+  const mwSorted = Object.values(perMw).sort((a,b)=>(b.mis+b.adm)-(a.mis+a.adm)||b.tot-a.tot);
+
+  return `
+  ${periodeBalk()}
+  <p class="tiny muted" style="margin:-4px 0 12px">${esc(periodeLabel())}</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">Stuks verlies</div><div class="v num">${totaal}</div><div class="s">${rs.length} registratie${rs.length===1?"":"s"}</div></div>
+    <div class="kpi"><div class="k">Nog af te boeken</div><div class="v num">${open}</div><div class="s">${totaal-open} al verwerkt</div></div>
+    <div class="kpi"><div class="k">Grootste oorzaak</div><div class="v" style="font-size:20px;line-height:1.2;padding-top:5px">${topReden?esc(redenLabel(topReden[0])):"—"}</div><div class="s">${topReden?topReden[1]+" stuks":"geen data"}</div></div>
+    <div class="kpi"><div class="k">Door medewerker</div><div class="v num">${(perGroep["Training"]||0)+(perGroep["Proces"]||0)}</div><div class="s">misplakkers + administratie</div></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="card-h"><h2>Waar zit het verlies in</h2><span class="sub" style="margin-left:auto">stuks per oorzaak</span></div>
+    <div class="card-b">
+      ${totaal?`
+      <div class="vb" style="height:16px">${redenSorted.map(([id,n])=>`<i style="width:${(n/totaal*100).toFixed(2)}%;background:${redenKleur(id)}" title="${esc(redenLabel(id))}: ${n}"></i>`).join("")}</div>
+      <div class="scroll" style="margin-top:14px"><table class="tbl">
+        <thead><tr><th>Oorzaak</th><th>Categorie</th><th class="r">Stuks</th><th class="r">Aandeel</th></tr></thead>
+        <tbody>${redenSorted.map(([id,n])=>`<tr>
+          <td><span class="pill" style="--c:${redenKleur(id)}"><i></i>${esc(redenLabel(id))}</span></td>
+          <td class="muted tiny">${esc(REDEN[id]?.groep||"—")}</td>
+          <td class="r num" style="font-weight:650">${n}</td>
+          <td class="r num muted">${(n/totaal*100).toFixed(0)}%</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <p class="hint">Training helpt bij <b>misplakkers</b> en <b>administratieve fouten</b>. Bij veel <b>garantie</b> of <b>beschadigd ontvangen</b> zit het probleem bij het product of de leverancier, niet bij je team.</p>
+      `:`<div class="empty">Geen registraties in deze periode.</div>`}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Per artikel</h2><span class="sub" style="margin-left:auto">${prodSorted.length} artikelen</span></div>
+    ${prodSorted.length?`<div class="vlist">${prodSorted.map(p=>{
+      const brk=Object.entries(p.red).sort((a,b)=>b[1]-a[1]);
+      return `<div class="vrow">
+        <div class="nm">${esc(p.naam)} <em>· ${p.nr?"art. "+esc(p.nr):esc(p.soort||"")}</em></div>
+        <div class="tot num">${p.tot}</div>
+        <div class="bar"><div class="vb">${brk.map(([id,n])=>`<i style="width:${(n/p.tot*100).toFixed(2)}%;background:${redenKleur(id)}"></i>`).join("")}</div></div>
+        <div class="brk">${brk.map(([id,n])=>`<span><i style="background:${redenKleur(id)}"></i>${esc(redenLabel(id))} ${n}</span>`).join("")}</div>
+      </div>`;}).join("")}</div>`:`<div class="empty">Geen registraties in deze periode.</div>`}
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Per medewerker</h2><span class="sub" style="margin-left:auto">gesorteerd op beïnvloedbaar verlies</span></div>
+    ${mwSorted.length?`<div class="scroll"><table class="tbl">
+      <thead><tr><th>Medewerker</th><th class="r">Misplakkers</th><th class="r">Administratie</th><th class="r">Totaal</th></tr></thead>
+      <tbody>${mwSorted.map(m=>`<tr>
+        <td style="font-weight:600">${esc(m.naam)}</td>
+        <td class="r num">${m.mis||"—"}</td><td class="r num">${m.adm||"—"}</td><td class="r num muted">${m.tot}</td>
+      </tr>`).join("")}</tbody></table></div>
+      <div class="card-b" style="border-top:1px solid var(--line)"><p class="hint" style="margin:0">Bedoeld als signaal, niet als scorebord: kijk naar het aantal ten opzichte van hoeveel iemand plakt voordat je er een gesprek van maakt.</p></div>`
+      :`<div class="empty">Geen registraties in deze periode.</div>`}
+  </div>
+
+  <div class="card"><div class="card-b row">
+    <button class="btn sm ghost" onclick="exportCsv('periode')">Exporteer periode als CSV</button>
+    <button class="btn sm ghost" onclick="window.print()">Printen</button>
+  </div></div>`;
+}
+
+/* ============================================================
+   VIEW — AFBOEKEN
+   ============================================================ */
+function viewAfboeken(){
+  let rs = S.registraties.filter(inPeriode);
+  if(S.abFilter==="open") rs = rs.filter(r=>!r.afgeboekt);
+  if(S.abFilter==="klaar") rs = rs.filter(r=>r.afgeboekt);
+  rs = rs.slice().sort((a,b)=> (a.merk+a.soort).localeCompare(b.merk+b.soort) || dOnly(a.datum).localeCompare(dOnly(b.datum)));
+
+  const openAlles = S.registraties.filter(r=>!r.afgeboekt);
+  const selN = som([...S.selectie].map(id=>S.registraties.find(r=>r.id===id)).filter(Boolean), r=>r.aantal);
+
+  // samenvatting per product van de selectie of van alle open in periode
+  const basis = S.selectie.size ? rs.filter(r=>S.selectie.has(r.id)) : rs.filter(r=>!r.afgeboekt);
+  const perProd={};
+  basis.forEach(r=>{
+    const k=r.artikelnummer||((r.merk||"")+"|"+(r.soort||""));
+    perProd[k]=perProd[k]||{ nr:r.artikelnummer||"", naam:r.omschrijving||((r.merk||"")+" "+(r.soort||"")), prijs:r.prijs, aantal:0 };
+    perProd[k].aantal+=r.aantal;
+  });
+  const afboekRegels=Object.values(perProd).sort((a,b)=>b.aantal-a.aantal);
+
+  return `
+  ${periodeBalk()}
+  <p class="tiny muted" style="margin:-4px 0 12px">${esc(periodeLabel())} · ${openAlles.length} open registraties in totaal</p>
+  ${(S.formulierIds&&S.formulierIds.length)?`<div class="card" style="border-color:var(--ok)"><div class="card-b" style="padding:12px 14px">
+    <div class="tiny" style="font-weight:700">Formulier gedownload voor ${S.formulierIds.length} registratie(s).</div>
+    <div class="row" style="margin-top:9px">
+      <button class="btn sm" onclick="markeerFormulier()">Deze regels afboeken</button>
+      <button class="btn sm ghost" onclick="S.formulierIds=null;render()">Later</button>
+    </div></div></div>`:""}
+
+  <div class="card">
+    <div class="card-h"><h2>Afboeklijst</h2><span class="sub" style="margin-left:auto">wat je in het systeem moet corrigeren</span></div>
+    <div class="card-b">
+      ${afboekRegels.length?`<div class="scroll"><table class="tbl">
+        <thead><tr><th>Art.nr.</th><th>Omschrijving</th><th class="r">Aantal</th></tr></thead>
+        <tbody>${afboekRegels.map(a=>
+          `<tr><td class="num" style="font-weight:600">${esc(a.nr||"\u2014")}</td><td>${esc(a.naam)}</td><td class="r num" style="font-weight:700">${a.aantal}</td></tr>`).join("")}
+        <tr><td colspan="2" style="font-weight:800">Totaal</td><td class="r num" style="font-weight:800">${som(afboekRegels,a=>a.aantal)}</td></tr>
+        </tbody></table></div>
+        ${afboekRegels.length>10?`<p class="hint">Tien regels per blad, dus je krijgt één bestand met ${Math.ceil(afboekRegels.length/10)} tabbladen.</p>`:""}
+        ${afboekRegels.some(a=>!a.nr)?`<p class="hint" style="color:var(--warn)">Er staan regels zonder artikelnummer bij; die komen niet op het formulier.</p>`:""}
+        <div class="row" style="margin-top:13px">
+          <button class="btn sm" onclick="maakFormulier(this)">Vul afboekformulier</button>
+          <button class="btn sm ghost" onclick="exportCsv('afboek')">CSV</button>
+          <button class="btn sm ghost" onclick="window.print()">Printen</button>
+        </div>`
+      :`<div class="empty" style="padding:20px 0">Niets openstaand in deze periode.</div>`}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <h2>Registraties</h2>
+      <div class="seg" style="margin-left:auto">
+        ${[["open","Open"],["klaar","Afgeboekt"],["alle","Alle"]].map(([v,l])=>
+          `<button aria-pressed="${S.abFilter===v}" onclick="S.abFilter='${v}';S.selectie=new Set();render()">${l}</button>`).join("")}
+      </div>
+    </div>
+    ${rs.length?`
+    <div>${rs.map(r=>`<label class="ab">
+      <input type="checkbox" ${S.selectie.has(r.id)?"checked":""} onchange="kies('${r.id}',this.checked)">
+      <div class="m">
+        <b>${esc(r.merk)} · ${esc(r.soort)}</b>
+        <div><span class="pill" style="--c:${redenKleur(r.reden)}"><i></i>${esc(redenLabel(r.reden))}</span>
+          &nbsp;${esc(nlKort(r.datum))}${r.medewerker?" · "+esc(r.medewerker):""}${r.referentie?" · "+esc(r.referentie):""}</div>
+        ${r.notitie?`<div style="color:var(--ink-2)">${esc(r.notitie)}</div>`:""}
+        ${r.afgeboekt?`<div style="color:var(--ok);font-weight:600">Afgeboekt ${r.afgeboekt_op?esc(nlKort(r.afgeboekt_op)):""}</div>`:""}
+      </div>
+      <div class="q num">${r.aantal}×</div>
+    </label>`).join("")}</div>
+    <div class="sticky-act">
+      <button class="btn sm ghost" onclick="kiesAlles(true)">Alles kiezen</button>
+      <button class="btn sm ghost" onclick="kiesAlles(false)">Wissen</button>
+      <span class="tiny muted">${S.selectie.size} gekozen · ${selN} stuks</span>
+      <button class="btn sm" style="margin-left:auto" ${S.selectie.size?"":"disabled"} onclick="markeer(true)">Markeer als afgeboekt</button>
+      ${S.abFilter!=="open"?`<button class="btn sm ghost" ${S.selectie.size?"":"disabled"} onclick="markeer(false)">Terug naar open</button>`:""}
+    </div>`
+    :`<div class="empty">Geen registraties met dit filter.</div>`}
+  </div>`;
+}
+
+function kies(id,aan){ if(aan) S.selectie.add(id); else S.selectie.delete(id); render(); }
+function kiesAlles(aan){
+  let rs = S.registraties.filter(inPeriode);
+  if(S.abFilter==="open") rs=rs.filter(r=>!r.afgeboekt);
+  if(S.abFilter==="klaar") rs=rs.filter(r=>r.afgeboekt);
+  S.selectie = aan ? new Set(rs.map(r=>r.id)) : new Set();
+  render();
+}
+async function markeer(aan){
+  const ids=[...S.selectie]; if(!ids.length) return;
+  const { error } = await db.from("sp_registraties")
+    .update({ afgeboekt:aan, afgeboekt_op: aan?new Date().toISOString():null })
+    .in("id",ids);
+  if(error) return toast("Bijwerken mislukt: "+error.message, true);
+  toast(ids.length+" registratie(s) "+(aan?"afgeboekt":"weer open"));
+  S.selectie=new Set();
+  await laadAlles();
+}
+
+/* ============================================================
+   VIEW — BEHEER
+   ============================================================ */
+function viewBeheer(){
+  const I=S.instellingen||{};
+  const treffers=artZoek(S.zoek);
+  const perSoort={};
+  S.producten.forEach(p=>{ const k=p.soort||"Overig"; (perSoort[k]=perSoort[k]||[]).push(p); });
+  const gekoppeld=Object.keys(S.barcodes||{}).length;
+
+  return `
+  <div class="card">
+    <div class="card-h"><h2>Artikelen</h2><span class="sub" style="margin-left:auto">${S.producten.length} totaal &middot; ${S.producten.filter(p=>p.actief).length} actief</span></div>
+    <div class="card-b">
+      <div class="field">
+        <label class="fl">Nieuw artikel</label>
+        <div class="row" style="align-items:flex-end">
+          <div style="flex:1;min-width:110px"><label class="fl" for="nNr">Artikelnr.</label><input type="text" id="nNr" inputmode="numeric" placeholder="1885198"></div>
+          <div style="flex:1;min-width:90px"><label class="fl" for="nPrijs">Prijs</label><input type="text" id="nPrijs" inputmode="decimal" placeholder="24,99"></div>
+        </div>
+        <div class="row" style="align-items:flex-end;margin-top:9px">
+          <div style="flex:1;min-width:100px"><label class="fl" for="nMerk">Merk</label><input type="text" id="nMerk" list="merkLijst" placeholder="ISY"><datalist id="merkLijst">${[...new Set(S.producten.map(p=>p.merk))].filter(Boolean).map(m=>`<option>${esc(m)}</option>`).join("")}</datalist></div>
+          <div style="flex:1;min-width:110px"><label class="fl" for="nSoort">Soort</label><input type="text" id="nSoort" list="soortLijst" placeholder="Telefoonglas"><datalist id="soortLijst">${Object.keys(perSoort).map(x=>`<option>${esc(x)}</option>`).join("")}</datalist></div>
+        </div>
+        <div class="field"><label class="fl" for="nOms">Omschrijving (komt zo op het formulier)</label>
+          <input type="text" id="nOms" placeholder="ISY IPG-5199-1-2.5D IPHONE 16 PRO"></div>
+        <button class="btn sm" style="margin-top:11px" onclick="voegArtikel()">Artikel toevoegen</button>
+        <p class="hint">Zet een artikel op inactief in plaats van het te verwijderen, dan blijven oude overzichten kloppen.</p>
+      </div>
+
+      <div class="field">
+        <label class="fl" for="zoekB">Zoek in het assortiment</label>
+        <input type="text" id="zoekB" placeholder="Nummer of naam" value="${esc(S.zoek)}" oninput="S.zoek=this.value;render()">
+        ${S.zoek.trim()?`<div style="margin-top:10px;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden">
+          ${treffers.length?treffers.map(p=>`<div style="display:flex;gap:9px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:650;font-size:13.5px">${esc(p.omschrijving||"")}</div>
+              <div class="tiny muted">art. ${esc(p.artikelnummer||"")} &middot; ${esc(p.soort||"")}${p.prijs!=null?" &middot; &euro; "+Number(p.prijs).toFixed(2).replace(".",","):""}</div>
+            </div>
+            <button class="btn sm ghost" onclick="toggleProduct('${p.id}',${!p.actief})">${p.actief?"Uit":"Aan"}</button>
+          </div>`).join(""):`<div class="empty" style="padding:16px">Niets gevonden.</div>`}
+        </div>`:`<p class="hint">${Object.entries(perSoort).map(([k,v])=>esc(k)+" "+v.length).join(" &middot; ")}</p>`}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>QR-labels voor de balie</h2><span class="sub" style="margin-left:auto">printen</span></div>
+    <div class="card-b">
+      <p class="hint" style="margin:0 0 12px">Print de labels en plak ze op de balie. Scannen gaat dan direct, zonder dat je de verpakking nodig hebt.</p>
+      <div class="field">
+        <label class="fl" for="qrSoort">Welke artikelen</label>
+        <select id="qrSoort">
+          <option value="__alles">Alles (${S.producten.filter(p=>p.actief&&p.artikelnummer).length} labels)</option>
+          ${Object.entries(perSoort).map(([k,v])=>`<option value="${esc(k)}">${esc(k)} (${v.filter(p=>p.actief&&p.artikelnummer).length})</option>`).join("")}
+        </select>
+      </div>
+      <button class="btn sm" style="margin-top:11px" onclick="printLabels(document.getElementById('qrSoort').value)">Labels openen om te printen</button>
+      <p class="hint">Drie labels per rij op A4. Er opent een nieuw tabblad met een printknop.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Gescande barcodes</h2><span class="sub" style="margin-left:auto">${gekoppeld} gekoppeld</span></div>
+    <div class="card-b">
+      <p class="hint" style="margin:0">Scan je de EAN van een verpakking, dan vraagt de app eenmalig bij welk artikel die hoort en onthoudt dat. Met de QR-labels hierboven is dat niet nodig.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Aanvrager op het formulier</h2></div>
+    <div class="card-b">
+      <div class="row">
+        <div style="flex:1;min-width:150px"><label class="fl" for="aNaam">Naam</label><input type="text" id="aNaam" value="${esc(I.aanvrager_naam||"")}"></div>
+        <div style="flex:1;min-width:110px"><label class="fl" for="aNr">Pers. nr.</label><input type="text" id="aNr" inputmode="numeric" value="${esc(I.aanvrager_persnr||"")}"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:130px"><label class="fl" for="aAfd">Afdeling</label><input type="text" id="aAfd" value="${esc(I.aanvrager_afdeling||"")}"></div>
+      </div>
+      <button class="btn sm" style="margin-top:12px" onclick="zetAanvrager()">Opslaan</button>
+      <p class="hint">Het vinkje blijft op <b>26. Breuk zonder vergoeding</b> met code 2400, ongeacht de reden.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Medewerkers en pincodes</h2><span class="sub" style="margin-left:auto">${S.medewerkers.filter(m=>m.actief).length} actief</span></div>
+    <div class="card-b">
+      <div class="row" style="align-items:flex-end">
+        <div style="flex:1;min-width:150px"><label class="fl" for="nMw">Naam</label><input type="text" id="nMw" placeholder="Voornaam"></div>
+        <button class="btn sm" onclick="voegMw()">Toevoegen</button>
+      </div>
+      <p class="hint">Zonder pincode kan iemand niet inloggen. Zet een code, geef die aan de medewerker, en laat hem hier niet slingeren.</p>
+    </div>
+    ${S.medewerkers.length?`<div>${S.medewerkers.map(m=>`
+      <div style="padding:12px 15px;border-top:1px solid var(--line)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:14px;${m.actief?"":"opacity:.5;text-decoration:line-through"}">${esc(m.naam)}${m.rol==="teamleider"?' <span class="pill" style="--c:var(--red)"><i></i>teamleider</span>':""}</div>
+            <div class="tiny muted">${m.pincode_hash?"pincode ingesteld":"<span style='color:var(--warn)'>geen pincode</span>"}${m.laatste_login?" &middot; laatst ingelogd "+esc(nlKort(m.laatste_login)):""}</div>
+          </div>
+          <button class="btn sm ghost" onclick="toggleMw('${m.id}',${!m.actief})">${m.actief?"Uit":"Aan"}</button>
+        </div>
+        <div class="row" style="margin-top:9px">
+          <input type="text" id="pin_${m.id}" inputmode="numeric" placeholder="Nieuwe pincode (4-8 cijfers)" style="flex:1;min-width:150px">
+          <button class="btn sm" onclick="zetMwPin('${m.id}')">Zet code</button>
+          <button class="btn sm ghost" onclick="zetRol('${m.id}','${m.rol==="teamleider"?"medewerker":"teamleider"}')">${m.rol==="teamleider"?"Maak medewerker":"Maak teamleider"}</button>
+          ${m.pincode_hash?`<button class="btn sm ghost" onclick="wisMwPin('${m.id}')">Code wissen</button>`:""}
+        </div>
+      </div>`).join("")}</div>`:`<div class="empty">Nog geen medewerkers.</div>`}
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Instellingen</h2></div>
+    <div class="card-b">
+      <div class="field"><label class="fl" for="nPin">Nieuwe pincode</label>
+        <div class="row"><input type="text" id="nPin" inputmode="numeric" placeholder="4 cijfers" style="flex:1;min-width:120px"><button class="btn sm" onclick="zetPin()">Opslaan</button></div>
+        <p class="hint">Dit is jouw hoofdpincode: daarmee kom je altijd binnen, ook als er geen medewerkercodes zijn. Geldt op alle toestellen.</p>
+      </div>
+      <div class="field">
+        <label class="fl">Exporteren</label>
+        <button class="btn sm ghost" onclick="exportCsv('alles')">Volledige historie als CSV</button>
+      </div>
+      <div class="field">
+        <label class="fl">Versie</label>
+        <p class="tiny muted" style="margin:0">${BUILD}</p>
+      </div>
+      <div class="field">
+        <label class="fl">Dit toestel</label>
+        <div class="row">
+          <button class="btn sm ghost" onclick="sessionStorage.removeItem('sp_tl');ga('registreren')">Vergrendelen</button>
+          <span class="tiny muted">${outbox().length} registratie(s) wachten op sync</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function voegArtikel(){
+  const nr=(document.getElementById("nNr").value||"").trim();
+  const oms=(document.getElementById("nOms").value||"").trim();
+  const merk=(document.getElementById("nMerk").value||"").trim();
+  const soort=(document.getElementById("nSoort").value||"").trim();
+  const prijsRuw=(document.getElementById("nPrijs").value||"").trim().replace(",",".");
+  if(!nr||!oms) return toast("Artikelnummer en omschrijving zijn nodig.",true);
+  const prijs = prijsRuw===""?null:Number(prijsRuw);
+  if(prijs!==null && isNaN(prijs)) return toast("Prijs is geen getal.",true);
+  const max=Math.max(0,...S.producten.map(p=>p.sortering||0));
+  const { error } = await db.from("sp_producten").insert({
+    artikelnummer:nr, omschrijving:oms, merk:merk||null, soort:soort||"Overig",
+    prijs, sortering:max+10 });
+  if(error) return toast(error.code==="23505"?"Dat artikelnummer bestaat al.":"Toevoegen mislukt: "+error.message, true);
+  toast(oms+" toegevoegd");
+  ["nNr","nOms","nPrijs"].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=""; });
+  await laadAlles();
+}
+
+async function zetAanvrager(){
+  const rijen=[
+    {sleutel:"aanvrager_naam", waarde:(document.getElementById("aNaam").value||"").trim()},
+    {sleutel:"aanvrager_persnr", waarde:(document.getElementById("aNr").value||"").trim()},
+    {sleutel:"aanvrager_afdeling", waarde:(document.getElementById("aAfd").value||"").trim()},
+  ];
+  for(const r of rijen){
+    const { error } = await db.from("sp_instellingen").upsert({...r, bijgewerkt_op:new Date().toISOString()});
+    if(error) return toast("Opslaan mislukt: "+error.message, true);
+  }
+  toast("Aanvragergegevens opgeslagen");
+  await laadAlles();
+}
+
+async function toggleProduct(id,actief){
+  const { error } = await db.from("sp_producten").update({actief}).eq("id",id);
+  if(error) return toast("Bijwerken mislukt",true); await laadAlles();
+}
+async function voegMw(){
+  const naam=(document.getElementById("nMw").value||"").trim();
+  if(!naam) return toast("Vul een naam in.",true);
+  const { error } = await db.from("sp_medewerkers").insert({naam});
+  if(error) return toast(error.code==="23505"?"Die naam staat er al.":"Toevoegen mislukt", true);
+  toast(naam+" toegevoegd"); await laadAlles();
+}
+async function zetMwPin(id){
+  const el=document.getElementById("pin_"+id);
+  const code=(el?.value||"").trim();
+  if(!/^\d{4,8}$/.test(code)) return toast("Gebruik 4 tot 8 cijfers.", true);
+  // Is deze code al bij iemand anders in gebruik? Dan kan de app niet zien wie inlogt.
+  const h=await hashPin(code);
+  const bezet=S.medewerkers.find(m=>m.id!==id && m.pincode_hash===h);
+  if(bezet) return toast("Die code is al van "+bezet.naam+". Kies een andere.", true);
+  if((S.instellingen||{}).pincode===code) return toast("Dat is de hoofdpincode. Kies een andere.", true);
+  const { error } = await db.from("sp_medewerkers").update({pincode_hash:h}).eq("id",id);
+  if(error) return toast("Opslaan mislukt: "+error.message, true);
+  const naam=(S.medewerkers.find(m=>m.id===id)||{}).naam||"";
+  toast("Pincode gezet voor "+naam);
+  if(el) el.value="";
+  await laadAlles();
+}
+
+async function wisMwPin(id){
+  const { error } = await db.from("sp_medewerkers").update({pincode_hash:null}).eq("id",id);
+  if(error) return toast("Wissen mislukt", true);
+  toast("Pincode gewist");
+  await laadAlles();
+}
+
+async function zetRol(id, rol){
+  const { error } = await db.from("sp_medewerkers").update({rol}).eq("id",id);
+  if(error) return toast("Bijwerken mislukt: "+error.message, true);
+  toast("Rol aangepast");
+  await laadAlles();
+}
+
+async function toggleMw(id,actief){
+  const { error } = await db.from("sp_medewerkers").update({actief}).eq("id",id);
+  if(error) return toast("Bijwerken mislukt",true); await laadAlles();
+}
+async function zetPin(){
+  const v=(document.getElementById("nPin").value||"").trim();
+  if(!/^\d{4,8}$/.test(v)) return toast("Gebruik 4 tot 8 cijfers.",true);
+  const { error } = await db.from("sp_instellingen").upsert({sleutel:"pincode",waarde:v,bijgewerkt_op:new Date().toISOString()});
+  if(error) return toast("Opslaan mislukt: "+error.message, true);
+  toast("Pincode gewijzigd");
+  document.getElementById("nPin").value="";
+}
+
+/* ============================================================
+   BARCODE SCANNEN
+   ============================================================ */
+let scanStop=null;
+
+async function laadScript(src){
+  if(document.querySelector('script[data-src="'+src+'"]')) return;
+  await new Promise((ok,fout)=>{
+    const el=document.createElement("script");
+    el.src=src; el.dataset.src=src;
+    el.onload=ok; el.onerror=()=>fout(new Error("Kan "+src+" niet laden"));
+    document.head.appendChild(el);
+  });
+}
+
+function scanUI(status){
+  return `<div class="modal" id="scanModal">
+    <div class="box" style="width:min(460px,100%);padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
+        <b style="font-weight:800;letter-spacing:-.02em">Scannen</b>
+        <button class="btn sm ghost" style="margin-left:auto" onclick="stopScan()">Sluiten</button>
+      </div>
+      <div style="position:relative;background:#000;aspect-ratio:4/3">
+        <video id="scanVid" playsinline muted autoplay style="width:100%;height:100%;object-fit:cover"></video>
+        <div style="position:absolute;inset:18% 8%;border:2px solid rgba(255,255,255,.85);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.25)"></div>
+      </div>
+      <div style="padding:13px 16px">
+        <p class="tiny" id="scanStatus" style="margin:0;font-weight:600">${esc(status||"Camera starten\u2026")}</p>
+        <p class="tiny muted" id="scanInfo" style="margin:6px 0 0"></p>
+        <button class="btn sm ghost" style="margin-top:11px;width:100%" onclick="stopScan();S.zoek='';render()">Liever zelf zoeken</button>
+      </div>
+    </div></div>`;
+}
+
+// Eigen beeldlus: elk frame naar een canvas en dan decoderen. Eerst de
+// ingebouwde BarcodeDetector (snel), maar die is op sommige toestellen
+// aanwezig zonder te werken - dan schakelen we automatisch over op ZXing.
+async function startScan(){
+  document.getElementById("modalHost").innerHTML = scanUI("Camera starten\u2026");
+  const vid=document.getElementById("scanVid");
+  const zet=(t,i)=>{
+    const a=document.getElementById("scanStatus"); if(a) a.textContent=t;
+    if(i!==undefined){ const bb=document.getElementById("scanInfo"); if(bb) bb.textContent=i; }
+  };
+
+  let stream;
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:{ideal:"environment"}, width:{ideal:1280}, height:{ideal:720} }
+    });
+  }catch(e){
+    zet("Geen toegang tot de camera ("+e.name+").",
+        "Sta camera toe in je browserinstellingen, of zoek het artikel zelf op.");
+    return;
+  }
+  vid.srcObject=stream;
+  try{ await vid.play(); }catch(e){}
+
+  let bezig=true, frames=0, motor="native", natFouten=0, laatsteFout="";
+  const cv=document.createElement("canvas");
+  const ctx=cv.getContext("2d",{willReadFrequently:true});
+  let detector=null, zxReader=null;
+
+  scanStop=()=>{ bezig=false; stream.getTracks().forEach(t=>t.stop()); };
+
+  const FORMATEN=["qr_code","ean_13","ean_8","upc_a","upc_e","code_128","code_39","itf","codabar"];
+
+  if("BarcodeDetector" in window){
+    try{
+      const kan = await window.BarcodeDetector.getSupportedFormats();
+      const wil = FORMATEN.filter(f=>kan.includes(f));
+      detector = wil.length ? new window.BarcodeDetector({formats:wil}) : new window.BarcodeDetector();
+    }catch(e){ detector=null; motor="zxing"; }
+  } else { motor="zxing"; }
+
+  async function zorgZxing(){
+    if(zxReader) return true;
+    zet("Scanner laden\u2026","eenmalig, daarna direct");
+    try{ await laadScript("zxing.min.js"); }
+    catch(e){ zet("Scanner kon niet laden.","Zoek het artikel zelf op."); return false; }
+    const hints=new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[
+      ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.ITF, ZXing.BarcodeFormat.CODABAR]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    zxReader = new ZXing.MultiFormatReader();
+    zxReader.setHints(hints);
+    return true;
+  }
+
+  if(motor==="zxing" && !(await zorgZxing())) return;
+  zet("Houd de code in het kader\u2026", motor==="native"?"":"terugvalscanner actief");
+
+  async function lus(){
+    if(!bezig) return;
+    if(vid.readyState < 2 || !vid.videoWidth){ requestAnimationFrame(lus); return; }
+
+    cv.width=vid.videoWidth; cv.height=vid.videoHeight;
+    ctx.drawImage(vid,0,0,cv.width,cv.height);
+    frames++;
+
+    let code=null;
+    if(motor==="native" && detector){
+      try{
+        const res=await detector.detect(cv);
+        if(res && res.length) code=res[0].rawValue;
+        natFouten=0;
+      }catch(e){
+        laatsteFout=e.name||String(e);
+        natFouten++;
+        // De ingebouwde scanner bestaat maar werkt niet: overschakelen.
+        if(natFouten>=5){
+          motor="zxing";
+          if(!(await zorgZxing())) return;
+          zet("Houd de code in het kader\u2026","overgeschakeld op terugvalscanner");
+        }
+      }
+    } else if(zxReader){
+      try{
+        const bron=new ZXing.HTMLCanvasElementLuminanceSource(cv);
+        const bmp=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(bron));
+        code=zxReader.decode(bmp).getText();
+      }catch(e){
+        // NotFoundException per frame is normaal; alleen echte fouten bewaren
+        if(e && e.name && e.name!=="NotFoundException" && e.name!=="ChecksumException"
+           && e.name!=="FormatException") laatsteFout=e.name;
+      }
+      if(zxReader.reset) { try{ zxReader.reset(); }catch(e){} }
+    }
+
+    if(code){ klaar(String(code)); return; }
+
+    if(frames%30===0){
+      const info=(motor==="native"?"ingebouwde scanner":"terugvalscanner")
+        + " \u00b7 " + frames + " beelden" + (laatsteFout?" \u00b7 laatste fout: "+laatsteFout:"");
+      zet("Houd de code in het kader\u2026", info);
+    }
+    // Bij de terugvalscanner iets rustiger, die kost meer rekenkracht.
+    if(motor==="native") requestAnimationFrame(lus); else setTimeout(lus, 90);
+  }
+
+  function klaar(code){
+    if(!bezig) return;
+    bezig=false;
+    if(navigator.vibrate) navigator.vibrate(60);
+    stopScan();
+    verwerkScan(code.trim());
+  }
+
+  requestAnimationFrame(lus);
+}
+
+function stopScan(){
+  if(scanStop){ try{ scanStop(); }catch(e){} scanStop=null; }
+  const h=document.getElementById("modalHost"); if(h) h.innerHTML="";
+}
+
+function verwerkScan(ruw){
+  let code = String(ruw||"").trim();
+  // Onze eigen QR-labels bevatten "SP:<artikelnummer>". Prefix eraf, dan is
+  // het gewoon een artikelnummer en is er geen koppeling nodig.
+  const eigen = code.match(/^SP:(\d+)$/i);
+  if(eigen) code = eigen[1];
+
+  // 1. bekende barcode
+  const pid = S.barcodes[code];
+  if(pid){
+    const p=S.producten.find(x=>x.id===pid);
+    if(p){ kiesArtikel(p); toast("Gescand: "+(p.omschrijving||p.soort)); return; }
+  }
+  // 2. de code is zelf een artikelnummer
+  const direct = S.producten.find(x=>x.artikelnummer===code);
+  if(direct){ kiesArtikel(direct); toast("Gescand: art. "+code); return; }
+  // 3. onbekend: eenmalig koppelen
+  S.koppelCode=code; S.zoek=""; render();
+  toast("Nieuwe code \u2014 koppel hem \u00e9\u00e9n keer aan het juiste artikel.");
+}
+
+function koppelUI(){
+  const treffers=artZoek(S.zoek);
+  return `<div class="card" style="border-color:var(--warn)">
+    <div class="card-h"><h2>Onbekende barcode</h2></div>
+    <div class="card-b">
+      <p class="hint" style="margin:0 0 12px">Code <b>${esc(S.koppelCode)}</b> is nog niet bekend. Kies eenmalig het bijbehorende artikel; daarna herkent de app hem meteen.</p>
+      <input type="text" id="zoekK" placeholder="Zoek op artikelnummer of naam" value="${esc(S.zoek)}"
+             oninput="S.zoek=this.value;render()" autocomplete="off">
+      ${S.zoek.trim()?(treffers.length?`<div style="margin-top:10px;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden">
+        ${treffers.map(p=>`<button style="display:block;width:100%;text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);background:var(--surface)"
+          onclick="koppelAan('${p.id}')">
+          <div style="font-weight:650;font-size:13.5px">${esc(p.omschrijving||"")}</div>
+          <div class="tiny muted">Art. ${esc(p.artikelnummer||"")} &middot; ${esc(p.soort||"")}</div>
+        </button>`).join("")}</div>`:`<p class="hint">Niets gevonden.</p>`):""}
+      <button class="btn block ghost" style="margin-top:12px" onclick="S.koppelCode=null;S.zoek='';render()">Annuleren</button>
+    </div></div>`;
+}
+
+async function koppelAan(pid){
+  const code=S.koppelCode, p=S.producten.find(x=>x.id===pid);
+  const { error } = await db.from("sp_barcodes").upsert({ code, product_id:pid });
+  if(error){ toast("Koppelen mislukt: "+error.message, true); return; }
+  S.barcodes[code]=pid;
+  S.koppelCode=null; S.zoek="";
+  toast("Barcode gekoppeld aan "+(p?.omschrijving||"artikel"));
+  kiesArtikel(p||null);
+}
+
+/* ============================================================
+   QR-LABELS PRINTEN
+   ============================================================ */
+// De labels bevatten "SP:<artikelnummer>". Zo is een gescande code meteen
+// een artikel, zonder de EAN-koppeling die verpakkingen nodig hebben.
+function qrSvg(tekst, mm){
+  const q = qrcode(0, "M");
+  q.addData(tekst);
+  q.make();
+  const n = q.getModuleCount();
+  let pad = "";
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(q.isDark(r,c)) pad += `M${c} ${r}h1v1h-1z`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 ${n+2} ${n+2}" `
+    + `width="${mm}mm" height="${mm}mm" shape-rendering="crispEdges">`
+    + `<rect x="-1" y="-1" width="${n+2}" height="${n+2}" fill="#fff"/>`
+    + `<path d="${pad}" fill="#000"/></svg>`;
+}
+
+function korteNaam(p){
+  // "ISY IPG-5199-1-2.5D IPHONE 16 PRO" -> "IPHONE 16 PRO"
+  let t=(p.omschrijving||"").replace(/^ISY\s+/i,"");
+  t=t.replace(/^(IPG|ICP)[-\s][0-9.\-A-Z]*\s*/i,"");
+  return (t||p.soort||p.artikelnummer).trim();
+}
+
+async function printLabels(soortFilter){
+  try{
+    await laadScript("qrcode.min.js");
+  }catch(e){ return toast("QR-generator kon niet laden.", true); }
+
+  let lijst=S.producten.filter(p=>p.actief && p.artikelnummer);
+  if(soortFilter && soortFilter!=="__alles") lijst=lijst.filter(p=>p.soort===soortFilter);
+  if(!lijst.length) return toast("Geen artikelen om te printen.", true);
+  lijst.sort((a,b)=>(a.soort||"").localeCompare(b.soort||"")||korteNaam(a).localeCompare(korteNaam(b)));
+
+  const labels = lijst.map(p=>`
+    <div class="lab">
+      <div class="qr">${qrSvg("SP:"+p.artikelnummer, 26)}</div>
+      <div class="tx">
+        <div class="nm">${esc(korteNaam(p))}</div>
+        <div class="sr">${esc(p.soort||"")}</div>
+        <div class="nr">${esc(p.artikelnummer)}</div>
+      </div>
+    </div>`).join("");
+
+  const w = window.open("", "_blank");
+  if(!w) return toast("De browser blokkeerde het printvenster. Sta pop-ups toe.", true);
+  w.document.write(`<!DOCTYPE html><html lang="nl"><head><meta charset="utf-8">
+  <title>QR-labels screenprotectors</title>
+  <style>
+    @page { size:A4; margin:10mm; }
+    *{box-sizing:border-box}
+    body{margin:0;font:400 11px/1.3 -apple-system,system-ui,Arial,sans-serif;color:#000}
+    h1{font-size:15px;margin:0 0 2mm}
+    .sub{font-size:10px;color:#555;margin:0 0 5mm}
+    .vel{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
+    .lab{display:flex;gap:3mm;align-items:center;border:1px solid #bbb;border-radius:2mm;
+         padding:3mm;break-inside:avoid;page-break-inside:avoid;background:#fff}
+    .qr{flex:none;line-height:0}
+    .tx{min-width:0}
+    .nm{font-weight:700;font-size:11px;line-height:1.2;word-break:break-word}
+    .sr{font-size:9px;color:#555;margin-top:.7mm}
+    .nr{font-size:11px;font-weight:700;letter-spacing:.02em;margin-top:1mm;font-variant-numeric:tabular-nums}
+    .knop{margin:0 0 5mm}
+    button{font:inherit;padding:8px 14px;border:1px solid #888;border-radius:6px;background:#f4f4f4;cursor:pointer}
+    @media print { .knop{display:none} }
+  </style></head><body>
+  <div class="knop"><button onclick="window.print()">Printen</button></div>
+  <h1>QR-labels screenprotectors${soortFilter&&soortFilter!=="__alles"?" &middot; "+esc(soortFilter):""}</h1>
+  <p class="sub">${lijst.length} artikelen &middot; scan met de app bij een misplakker of compensatie</p>
+  <div class="vel">${labels}</div>
+  </body></html>`);
+  w.document.close();
+  toast(lijst.length+" labels klaargezet in een nieuw tabblad");
+}
+
+/* ============================================================
+   TELLING INLEZEN EN VERWERKEN
+   ============================================================ */
+// De export uit het systeem heet .xls maar is tab-gescheiden tekst. Een echt
+// xlsx-bestand begint met "PK"; dat lezen we met ExcelJS. Beide worden
+// ondersteund, want die naam zegt niets over de inhoud.
+
+function normKop(t){ return String(t||"").toLowerCase().replace(/\s+/g," ").replace(/\./g,"").trim(); }
+
+const TEL_KOLOMMEN = {
+  teldatum:   ["bw-datum","bw datum","datum","boekdatum"],
+  artikel:    ["artikel nr","artikelnr","artikelnummer","art nr","artnr"],
+  type:       ["type","omschrijving","merk type"],
+  wws:        ["aantal wws","wws","aantal systeem","systeem"],
+  geteld:     ["aantal geteld","geteld","telling"],
+  verschil:   ["verschil","afwijking"],
+  afdeling:   ["afdelingsnummer","afdeling","afd"],
+  gdgr:       ["gdgr-nr","gdgr nr","gdgr","ggr-nr"],
+};
+
+function vindKolommen(kop){
+  const genormaliseerd = kop.map(normKop);
+  const uit={};
+  for(const [veld,namen] of Object.entries(TEL_KOLOMMEN)){
+    let i = genormaliseerd.findIndex(k => namen.includes(k));
+    if(i<0) i = genormaliseerd.findIndex(k => namen.some(n => k.startsWith(n)));
+    if(i>=0) uit[veld]=i;
+  }
+  return uit;
+}
+
+function parseNL(v){
+  const t=String(v??"").trim().replace(/\./g,"").replace(",",".");
+  if(t==="") return null;
+  const n=Number(t);
+  return isNaN(n)?null:n;
+}
+
+function parseDatumNL(v){
+  if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  const t=String(v??"").trim();
+  let m=t.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);   // 13-8-2026
+  if(m) return `${m[3]}-${String(m[2]).padStart(2,"0")}-${String(m[1]).padStart(2,"0")}`;
+  m=t.match(/^(\d{4})-(\d{2})-(\d{2})/);                   // 2026-08-13
+  if(m) return t.slice(0,10);
+  return null;
+}
+
+async function leesTelBestand(file){
+  const buf = await file.arrayBuffer();
+  const eerste = new Uint8Array(buf.slice(0,2));
+  let rijen;
+
+  if(eerste[0]===0x50 && eerste[1]===0x4B){        // echt xlsx
+    await laadScript("exceljs.min.js");
+    const wb=new ExcelJS.Workbook();
+    await wb.xlsx.load(buf);
+    const ws=wb.worksheets[0];
+    rijen=[];
+    ws.eachRow(r=>{
+      const uit=[];
+      r.eachCell({includeEmpty:true},c=>{
+        let v=c.value;
+        if(v && typeof v==="object"){
+          if(v.result!==undefined) v=v.result;
+          else if(v.text!==undefined) v=v.text;
+          else if(v instanceof Date) v=v;
+        }
+        uit.push(v);
+      });
+      rijen.push(uit);
+    });
+  } else {                                          // tekst met tabs of ;
+    let tekst = new TextDecoder("utf-8").decode(buf);
+    if(/\uFFFD/.test(tekst)) tekst = new TextDecoder("windows-1252").decode(buf);
+    const regels = tekst.split(/\r?\n/).filter(r=>r.trim()!=="");
+    const scheider = (regels[0].split("\t").length >= regels[0].split(";").length) ? "\t" : ";";
+    rijen = regels.map(r=>r.split(scheider));
+  }
+
+  if(!rijen.length) throw new Error("Het bestand is leeg.");
+  const kol = vindKolommen(rijen[0]);
+  const mist = ["teldatum","artikel","verschil"].filter(v=>kol[v]===undefined);
+  if(mist.length) throw new Error("Kolommen niet gevonden: "+mist.join(", ")
+    + ". Gevonden kop: " + rijen[0].slice(0,10).join(" | "));
+
+  const regels=[];
+  for(const r of rijen.slice(1)){
+    const nr = String(r[kol.artikel]??"").trim();
+    if(!nr) continue;
+    const datum = parseDatumNL(r[kol.teldatum]);
+    if(!datum) continue;
+    const wws = kol.wws!==undefined ? parseNL(r[kol.wws]) : null;
+    const geteld = kol.geteld!==undefined ? parseNL(r[kol.geteld]) : null;
+    let verschil = parseNL(r[kol.verschil]);
+    if(verschil===null && wws!==null && geteld!==null) verschil = geteld-wws;
+    if(verschil===null) continue;
+    regels.push({
+      teldatum: datum, artikelnummer: nr,
+      type_naam: String(r[kol.type]??"").trim()||null,
+      wws, geteld, verschil,
+      afdeling: kol.afdeling!==undefined ? String(r[kol.afdeling]??"").trim()||null : null,
+      gdgr: kol.gdgr!==undefined ? String(r[kol.gdgr]??"").trim()||null : null,
+      bestand: file.name,
+    });
+  }
+  if(!regels.length) throw new Error("Geen bruikbare regels gevonden.");
+  return regels;
+}
+
+async function kiesTelBestand(input){
+  const file=input.files && input.files[0];
+  if(!file) return;
+  try{
+    const regels = await leesTelBestand(file);
+    S.telVoorbeeld = { bestand:file.name, regels };
+    toast(regels.length+" regels gelezen uit "+file.name);
+  }catch(e){
+    S.telVoorbeeld=null;
+    toast("Inlezen mislukt: "+e.message, true);
+  }
+  input.value="";
+  render();
+}
+
+async function bewaarTelling(){
+  const v=S.telVoorbeeld;
+  if(!v) return;
+  // Bestaat de combinatie teldatum+artikel al, dan bijwerken in plaats van dubbel zetten.
+  const { error } = await db.from("sp_tellingen").upsert(v.regels);
+  if(error) return toast("Opslaan mislukt: "+error.message, true);
+  toast(v.regels.length+" telregels opgeslagen");
+  S.telVoorbeeld=null;
+  await laadAlles();
+}
+
+function telTekorten(rs){ return rs.filter(r=>r.verschil<0); }
+
+function telRegelsVoorFormulier(rs){
+  // Alleen tekorten die nog niet afgeboekt zijn; anders komt werk dat je al
+  // gedaan hebt opnieuw op het formulier.
+  return telTekorten(rs).filter(r=>!r.afgeboekt).map(r=>{
+    const p=S.producten.find(x=>x.artikelnummer===r.artikelnummer);
+    return {
+      nr: r.artikelnummer,
+      naam: (p && p.omschrijving) || r.type_naam || r.artikelnummer,
+      prijs: p ? p.prijs : null,
+      aantal: Math.abs(r.verschil),
+      id: r.id,
+    };
+  }).sort((a,b)=>b.aantal-a.aantal);
+}
+
+async function telFormulier(btn, datum){
+  const rs=S.tellingen.filter(t=>dOnly(t.teldatum)===datum);
+  const regels=telRegelsVoorFormulier(rs);
+  if(!regels.length) return toast("Geen tekorten op deze telling.", true);
+  const oud=btn.textContent;
+  btn.disabled=true; btn.textContent="Formulier maken\u2026";
+  try{
+    const n=await vulFormulier(regels, "TELVERSCHIL "+nlDatum(datum),
+      "Afboeken_telling_"+datum);
+    toast(n>1 ? "Formulier gedownload: "+n+" tabbladen ("+som(regels,r=>r.aantal)+" stuks)"
+              : "Formulier gedownload ("+som(regels,r=>r.aantal)+" stuks)");
+    S.telFormulierDatum=datum;
+    render();
+  }catch(e){
+    toast("Formulier maken mislukt: "+e.message, true);
+  }finally{
+    btn.disabled=false; btn.textContent=oud;
+  }
+}
+
+async function telMarkeer(datum){
+  const rs=S.tellingen.filter(t=>dOnly(t.teldatum)===datum && t.verschil<0 && !t.afgeboekt);
+  if(!rs.length) return;
+  const { error } = await db.from("sp_tellingen")
+    .update({ afgeboekt:true, afgeboekt_op:new Date().toISOString() })
+    .in("id", rs.map(r=>r.id));
+  if(error) return toast("Bijwerken mislukt: "+error.message, true);
+  toast(rs.length+" telregel(s) afgeboekt");
+  S.telFormulierDatum=null;
+  await laadAlles();
+}
+
+function viewTelling(){
+  const v=S.telVoorbeeld;
+  const perDatum={};
+  S.tellingen.forEach(t=>{ const d=dOnly(t.teldatum); (perDatum[d]=perDatum[d]||[]).push(t); });
+  const datums=Object.keys(perDatum).sort().reverse();
+
+  return `
+  <div class="card">
+    <div class="card-h"><h2>Telling inlezen</h2><span class="sub" style="margin-left:auto">export uit het systeem</span></div>
+    <div class="card-b">
+      <input type="file" id="telFile" accept=".xls,.xlsx,.txt,.csv,text/plain"
+             onchange="kiesTelBestand(this)" style="display:none">
+      <button class="btn block" onclick="document.getElementById('telFile').click()">Bestand kiezen</button>
+      <p class="hint">Het bestand uit het systeem (.xls, .xlsx of .csv). Alleen <b>negatieve</b> verschillen komen op het afboekformulier; overschotten laat de app staan.</p>
+
+      ${v?`<div style="margin-top:14px;border:1px solid var(--line-strong);border-radius:var(--r-sm);overflow:hidden">
+        <div style="padding:11px 13px;border-bottom:1px solid var(--line);background:var(--surface-2)">
+          <b style="font-size:13.5px">${esc(v.bestand)}</b>
+          <div class="tiny muted">${v.regels.length} regels &middot;
+            ${[...new Set(v.regels.map(r=>r.teldatum))].length} teldatum(s) &middot;
+            ${telTekorten(v.regels).length} tekort(en)</div>
+        </div>
+        <div class="scroll" style="max-height:260px;overflow-y:auto"><table class="tbl">
+          <thead><tr><th>Datum</th><th>Art.nr.</th><th>Type</th><th class="r">WWS</th><th class="r">Geteld</th><th class="r">Versch.</th></tr></thead>
+          <tbody>${v.regels.map(r=>`<tr>
+            <td class="tiny">${esc(nlKort(r.teldatum))}</td>
+            <td class="num">${esc(r.artikelnummer)}</td>
+            <td class="tiny">${esc((r.type_naam||"").slice(0,26))}</td>
+            <td class="r num muted">${r.wws??"\u2014"}</td>
+            <td class="r num">${r.geteld??"\u2014"}</td>
+            <td class="r num" style="font-weight:700;color:${r.verschil<0?"var(--bad)":"var(--ok)"}">${r.verschil>0?"+":""}${r.verschil}</td>
+          </tr>`).join("")}</tbody>
+        </table></div>
+        <div class="card-b" style="border-top:1px solid var(--line)">
+          ${v.regels.some(r=>!S.producten.find(p=>p.artikelnummer===r.artikelnummer))
+            ? `<p class="hint" style="color:var(--warn);margin:0 0 10px">Niet elk artikelnummer staat in je assortiment. Voor die regels gebruikt het formulier de naam uit het bestand; prijs blijft leeg.</p>` : ""}
+          <div class="row">
+            <button class="btn sm" onclick="bewaarTelling()">Telling opslaan</button>
+            <button class="btn sm ghost" onclick="S.telVoorbeeld=null;render()">Annuleren</button>
+          </div>
+        </div>
+      </div>`:""}
+    </div>
+  </div>
+
+  ${datums.length?datums.map(d=>{
+    const rs=perDatum[d];
+    const tek=telTekorten(rs);
+    const over=rs.filter(r=>r.verschil>0);
+    const openTek=tek.filter(r=>!r.afgeboekt);
+    const stuks=som(tek,r=>Math.abs(r.verschil));
+    return `<div class="card">
+      <div class="card-h">
+        <h2>Telling ${esc(nlDatum(d))}</h2>
+        <span class="sub" style="margin-left:auto">${rs.length} artikelen</span>
+      </div>
+      <div class="card-b">
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi" style="box-shadow:none"><div class="k">Tekorten</div><div class="v num" style="color:${tek.length?"var(--bad)":"var(--ink)"}">${tek.length}</div><div class="s">${stuks} stuks</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="k">Overschot</div><div class="v num">${over.length}</div><div class="s">niet afboeken</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="k">Open</div><div class="v num">${openTek.length}</div><div class="s">nog te boeken</div></div>
+        </div>
+      </div>
+      <div class="scroll"><table class="tbl">
+        <thead><tr><th>Art.nr.</th><th>Omschrijving</th><th class="r">Geteld</th><th class="r">Verschil</th><th>Status</th></tr></thead>
+        <tbody>${rs.slice().sort((a,b)=>a.verschil-b.verschil).map(r=>{
+          const p=S.producten.find(x=>x.artikelnummer===r.artikelnummer);
+          return `<tr>
+            <td class="num" style="font-weight:600">${esc(r.artikelnummer)}</td>
+            <td class="tiny">${esc(((p&&p.omschrijving)||r.type_naam||"").slice(0,34))}</td>
+            <td class="r num muted">${r.geteld??"\u2014"}</td>
+            <td class="r num" style="font-weight:700;color:${r.verschil<0?"var(--bad)":"var(--ok)"}">${r.verschil>0?"+":""}${r.verschil}</td>
+            <td class="tiny">${r.verschil<0?(r.afgeboekt?"<span style='color:var(--ok)'>afgeboekt</span>":"open"):"<span class='muted'>n.v.t.</span>"}</td>
+          </tr>`;}).join("")}</tbody>
+      </table></div>
+      <div class="card-b" style="border-top:1px solid var(--line)">
+        ${openTek.length>10?`<p class="hint" style="margin:0 0 9px">Tien regels per blad, dus je krijgt één bestand met ${Math.ceil(openTek.length/10)} tabbladen.</p>`:""}
+        ${openTek.length?`<div class="row">
+          <button class="btn sm" onclick="telFormulier(this,'${d}')">Vul afboekformulier (${openTek.length})</button>
+          ${S.telFormulierDatum===d?`<button class="btn sm ghost" onclick="telMarkeer('${d}')">Markeer als afgeboekt</button>`:""}
+        </div>`:`<p class="tiny muted" style="margin:0">${tek.length?"Alle tekorten van deze telling zijn afgeboekt.":"Geen tekorten op deze telling."}</p>`}
+      </div>
+    </div>`;}).join("")
+  :`<div class="card"><div class="empty">Nog geen tellingen ingelezen.</div></div>`}`;
+}
+
+/* ============================================================
+   AFBOEKFORMULIER (Excel)
+   ============================================================ */
+// Het officiele formulier heeft tien artikelregels op de oneven rijen 14..32.
+// We vullen alleen die cellen; al het andere (opmaak, logo, handtekeningvakken)
+// blijft staan omdat ExcelJS de werkmap intact laat.
+const FORM_RIJEN=[14,16,18,20,22,24,26,28,30,32];
+const FORM_KOL={ nr:2, oms:4, prijs:9, aantal:11 };
+
+function afboekRegelsNu(){
+  let rs=S.registraties.filter(inPeriode);
+  rs = S.selectie.size ? rs.filter(r=>S.selectie.has(r.id)) : rs.filter(r=>!r.afgeboekt);
+  const per={};
+  rs.forEach(r=>{
+    if(!r.artikelnummer) return;
+    per[r.artikelnummer]=per[r.artikelnummer]||{
+      nr:r.artikelnummer, naam:r.omschrijving||"", prijs:r.prijs, aantal:0, redenen:new Set(), ids:[] };
+    per[r.artikelnummer].aantal+=r.aantal;
+    per[r.artikelnummer].redenen.add(r.reden);
+    per[r.artikelnummer].ids.push(r.id);
+  });
+  return Object.values(per).sort((a,b)=>b.aantal-a.aantal);
+}
+
+// Generieke vuller: krijgt regels {nr, naam, prijs, aantal} en een redentekst.
+// Levert 1 bestand per tien regels, want het formulier heeft tien regels.
+async function vulFormulier(regels, redenTekst, bestandsnaam){
+  await laadScript("exceljs.min.js");
+  const basis = await (await fetch("afboekformulier.xlsx", {cache:"force-cache"})).arrayBuffer();
+
+  const blokken=[];
+  for(let i=0;i<regels.length;i+=10) blokken.push(regels.slice(i,i+10));
+
+  const I=S.instellingen||{};
+  function vulBlad(ws, blok, bladnr){
+    if(I.aanvrager_naam) ws.getCell("D6").value=I.aanvrager_naam;
+    if(I.aanvrager_persnr) ws.getCell("D7").value=Number(I.aanvrager_persnr)||I.aanvrager_persnr;
+    if(I.aanvrager_afdeling) ws.getCell("D8").value=I.aanvrager_afdeling;
+    // D9 bevat =TODAY() en houdt zichzelf bij; niet overschrijven.
+    blok.forEach((r,i)=>{
+      const rij=FORM_RIJEN[i];
+      ws.getCell(rij,FORM_KOL.nr).value = Number(r.nr)||r.nr;
+      ws.getCell(rij,FORM_KOL.oms).value = r.naam;
+      if(r.prijs!=null) ws.getCell(rij,FORM_KOL.prijs).value = Number(r.prijs);
+      ws.getCell(rij,FORM_KOL.aantal).value = r.aantal;
+    });
+    ws.getCell("B36").value = (redenTekst||"").toUpperCase()
+      + (blokken.length>1 ? "  (blad "+bladnr+" van "+blokken.length+")" : "");
+  }
+
+  // Eén werkmap. Past het niet op tien regels, dan komt er een tabblad bij
+  // in plaats van een tweede bestand.
+  const wb=new ExcelJS.Workbook();
+  await wb.xlsx.load(basis);
+  const eerste=wb.worksheets[0];
+  const merges=(eerste.model.merges||[]).slice();
+  if(blokken.length>1) eerste.name="Blad 1";
+  vulBlad(eerste, blokken[0], 1);
+
+  for(let b=1;b<blokken.length;b++){
+    const tmp=new ExcelJS.Workbook();
+    await tmp.xlsx.load(basis);
+    const bron=tmp.worksheets[0];
+    vulBlad(bron, blokken[b], b+1);
+    const naam="Blad "+(b+1);
+    const nieuwBlad=wb.addWorksheet(naam);
+    const model=bron.model;
+    model.name=naam; model.id=nieuwBlad.id;
+    nieuwBlad.model=model;
+    // Samengevoegde cellen komen niet mee in het model; opnieuw zetten.
+    merges.forEach(m=>{ try{ nieuwBlad.mergeCells(m); }catch(e){} });
+  }
+
+  const uit = await wb.xlsx.writeBuffer();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([uit],
+    {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  a.download=bestandsnaam+".xlsx"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),6000);
+  return blokken.length;
+}
+
+async function maakFormulier(btn){
+  const regels=afboekRegelsNu();
+  if(!regels.length) return toast("Geen regels met een artikelnummer om af te boeken.", true);
+  const oudeTekst=btn.textContent;
+  btn.disabled=true; btn.textContent="Formulier maken\u2026";
+  try{
+    const redenen=[...new Set(regels.flatMap(r=>[...r.redenen]))].map(redenLabel);
+    const n=await vulFormulier(regels, redenen.join(", "),
+      "Afboeken_screenprotectors_"+vandaag());
+    const stuks=som(regels,r=>r.aantal);
+    toast(n>1 ? "Formulier gedownload: "+n+" tabbladen, "+stuks+" stuks"
+              : "Formulier gedownload ("+stuks+" stuks op "+regels.length+" regels)");
+    S.formulierIds = regels.flatMap(r=>r.ids);
+    render();
+  }catch(e){
+    toast("Formulier maken mislukt: "+e.message, true);
+  }finally{
+    btn.disabled=false; btn.textContent=oudeTekst;
+  }
+}
+
+async function markeerFormulier(){
+  const ids=S.formulierIds||[];
+  if(!ids.length) return;
+  const { error } = await db.from("sp_registraties")
+    .update({ afgeboekt:true, afgeboekt_op:new Date().toISOString() }).in("id",ids);
+  if(error) return toast("Bijwerken mislukt: "+error.message, true);
+  toast(ids.length+" registratie(s) afgeboekt");
+  S.formulierIds=null; S.selectie=new Set();
+  await laadAlles();
+}
+
+/* ============================================================
+   CSV
+   ============================================================ */
+function exportCsv(soort){
+  let rs;
+  if(soort==="alles") rs=S.registraties;
+  else if(soort==="afboek") rs=S.registraties.filter(r=>inPeriode(r)&&!r.afgeboekt);
+  else rs=S.registraties.filter(inPeriode);
+  if(!rs.length) return toast("Niets te exporteren.",true);
+
+  const kop=["Datum","Week","Artikelnr.","Omschrijving","Prijs","Merk","Soort","Aantal","Oorzaak","Categorie","Medewerker","Referentie","Notitie","Afgeboekt","Afgeboekt op"];
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const rijen=rs.map(r=>{
+    const w=isoWeek(r.datum);
+    return [dOnly(r.datum), w.jaar+"-W"+String(w.week).padStart(2,"0"),
+      r.artikelnummer||"", r.omschrijving||"", r.prijs!=null?String(r.prijs).replace(".",","):"",
+      r.merk||"", r.soort||"", r.aantal,
+      redenLabel(r.reden), REDEN[r.reden]?.groep||"", r.medewerker||"", r.referentie||"", r.notitie||"",
+      r.afgeboekt?"ja":"nee", r.afgeboekt_op?dOnly(r.afgeboekt_op):""].map(q).join(";");
+  });
+  const csv="\uFEFF"+[kop.map(q).join(";"),...rijen].join("\r\n");
+  const naam="screenprotectors_"+(soort==="alles"?"historie":soort==="afboek"?"afboeklijst":"periode")+"_"+vandaag()+".csv";
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=naam; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  toast("CSV gedownload");
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+document.getElementById("btnTheme").onclick=()=>{
+  const n = document.documentElement.dataset.theme==="donker"?"licht":"donker";
+  document.documentElement.dataset.theme=n; LS.set("sp_theme",n);
+};
+document.getElementById("btnSync").onclick=()=>laadAlles();
+document.documentElement.dataset.theme = LS.get("sp_theme","licht");
+window.addEventListener("online", ()=>outboxFlush().then(n=>{ if(n) laadAlles(); }));
+
+// expose voor inline handlers
+Object.assign(window,{S,ga,setF,setAantal,opslaan,verwijder,doeInlog,uitloggen,kies,kiesAlles,markeer,
+  kiesArtikel,kiesArtikelId,hertekenZoek,startScan,stopScan,koppelAan,maakFormulier,markeerFormulier,
+  kiesTelBestand,bewaarTelling,telFormulier,telMarkeer,
+  zetMwPin,wisMwPin,zetRol,printLabels,
+  voegArtikel,zetAanvrager,
+  toggleProduct,voegMw,toggleMw,zetPin,exportCsv,laadAlles,render});
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+
+laadAlles();
+</script>
+</body>
+</html>

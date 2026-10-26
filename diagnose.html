@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnose · Screenprotectors</title>
+<style>
+body{font:15px/1.55 -apple-system,system-ui,sans-serif;max-width:760px;margin:0 auto;padding:20px 16px 60px;background:#F4F5F7;color:#14151A}
+h1{font-size:20px;margin:0 0 4px}
+p.lead{color:#5b6775;margin:0 0 20px;font-size:14px}
+.card{background:#fff;border:1px solid #d7dee6;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.rij{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #eef1f4;align-items:flex-start}
+.rij:last-child{border-bottom:none}
+.vlag{flex:none;width:22px;font-weight:700}
+.ok{color:#1f7a4d}.nee{color:#c02418}.wacht{color:#8b96a3}.let{color:#b8860b}
+.nm{font-weight:600;flex:none;width:190px}
+.det{color:#5b6775;font-size:13px;word-break:break-word;flex:1;min-width:0}
+pre{background:#f6f8fa;border:1px solid #e2e7ee;border-radius:7px;padding:11px;overflow:auto;font-size:12px;margin:12px 0 0}
+button{background:#16212c;color:#fff;border:none;padding:11px 17px;border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+button.g{background:#fff;color:#16212c;border:1px solid #bcc7d3}
+.uitleg{background:#fffbea;border:1px solid #f0e0a0;border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:14px}
+.uitleg b{display:block;margin-bottom:5px}
+</style>
+</head>
+<body>
+<h1>Diagnose</h1>
+<p class="lead">Deze pagina test stap voor stap of de app bij de database kan. Maak er een schermafbeelding van als er iets rood is.</p>
+
+<div id="conclusie"></div>
+<div class="card" id="uitslag"></div>
+<div class="card">
+  <button onclick="location.reload()">Opnieuw testen</button>
+  <button class="g" onclick="kopieer()">Kopieer resultaat</button>
+  <pre id="ruw"></pre>
+</div>
+
+<script>
+const SB_URL="https://ykhkijmlcbljwutartts.supabase.co";
+const SB_KEY="sb_publishable_x_8o2POMAF1mTe0W2DdkIA_OO63x48m";
+const BUILD="2026-08-31-huisstijl";
+
+const tests=[];
+function zet(naam, vlag, det){
+  const b=tests.find(t=>t.naam===naam);
+  if(b){ b.vlag=vlag; b.det=det; } else tests.push({naam,vlag,det});
+  teken();
+}
+function teken(){
+  document.getElementById("uitslag").innerHTML = tests.map(t=>{
+    const k = t.vlag==="ok"?"ok":t.vlag==="nee"?"nee":t.vlag==="let"?"let":"wacht";
+    const s = t.vlag==="ok"?"✓":t.vlag==="nee"?"✗":t.vlag==="let"?"!":"…";
+    return `<div class="rij"><div class="vlag ${k}">${s}</div><div class="nm">${t.naam}</div><div class="det">${t.det||""}</div></div>`;
+  }).join("");
+  document.getElementById("ruw").textContent = tests.map(t=>`[${t.vlag}] ${t.naam}: ${t.det||""}`).join("\n");
+}
+function kopieer(){
+  navigator.clipboard.writeText(document.getElementById("ruw").textContent)
+    .then(()=>alert("Gekopieerd — plak het in de chat."))
+    .catch(()=>alert("Kopiëren lukte niet, maak een schermafbeelding."));
+}
+function slot(html){ document.getElementById("conclusie").innerHTML = `<div class="uitleg">${html}</div>`; }
+
+(async ()=>{
+  // 1. omgeving
+  zet("Versie diagnose", "ok", BUILD);
+  const prot = location.protocol;
+  const inFrame = window.top !== window.self;
+  zet("Adres", prot==="https:"||prot==="http:"?"ok":"nee", location.href.slice(0,120));
+  zet("Protocol", prot==="https:" ? "ok" : prot==="http:" ? "let" : "nee",
+      prot==="file:" ? "file:// — je opent het bestand rechtstreeks van je computer. Zet het op een host." :
+      prot==="http:" ? "http (geen https) — werkt lokaal, maar een host geeft je https" : prot);
+  zet("In een iframe", inFrame?"let":"ok",
+      inFrame ? "Ja — dit is een ingebedde weergave. Sandboxes blokkeren vaak externe verzoeken." : "Nee, eigen tabblad");
+  zet("Browser online", navigator.onLine?"ok":"nee", navigator.onLine?"ja":"nee, geen netwerk");
+
+  // 2. is fetch aangepast door de omgeving?
+  const fetchEigen = /\[native code\]/.test(String(window.fetch));
+  zet("fetch onaangepast", fetchEigen?"ok":"let",
+      fetchEigen ? "originele browserfunctie" : "AANGEPAST door de omgeving — dit is de oorzaak van DataCloneError");
+
+  // 3. algemeen internet
+  try{
+    const r = await fetch("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/package.json", {cache:"no-store"});
+    zet("Internet bereikbaar", r.ok?"ok":"let", "status "+r.status);
+  }catch(e){
+    zet("Internet bereikbaar", "nee", e.name+": "+e.message);
+  }
+
+  // 4. supabase bereikbaar
+  let sbOk=false;
+  try{
+    const r = await fetch(SB_URL+"/rest/v1/", {headers:{apikey:SB_KEY}, cache:"no-store"});
+    sbOk = r.status<500;
+    zet("Supabase bereikbaar", sbOk?"ok":"nee", "status "+r.status);
+  }catch(e){
+    zet("Supabase bereikbaar", "nee", e.name+": "+e.message);
+  }
+
+  // 5. lezen
+  let leesOk=false;
+  try{
+    const r = await fetch(SB_URL+"/rest/v1/sp_producten?select=merk,soort&limit=3",
+      {headers:{apikey:SB_KEY, Authorization:"Bearer "+SB_KEY}, cache:"no-store"});
+    const t = await r.text();
+    leesOk = r.ok;
+    zet("Producten lezen", r.ok?"ok":"nee", r.ok ? t.slice(0,90) : "status "+r.status+" — "+t.slice(0,140));
+  }catch(e){
+    zet("Producten lezen", "nee", e.name+": "+e.message);
+  }
+
+  // 6. schrijven (en direct weer opruimen)
+  if(leesOk){
+    try{
+      const r = await fetch(SB_URL+"/rest/v1/sp_registraties", {
+        method:"POST",
+        headers:{apikey:SB_KEY, Authorization:"Bearer "+SB_KEY,
+                 "Content-Type":"application/json", Prefer:"return=representation"},
+        body: JSON.stringify({datum:new Date().toISOString().slice(0,10), merk:"__DIAGNOSE__",
+          soort:"test", aantal:1, reden:"overig", notitie:"diagnosetest"})
+      });
+      const t = await r.text();
+      if(r.ok){
+        zet("Registratie opslaan", "ok", "gelukt, wordt weer verwijderd");
+        await fetch(SB_URL+"/rest/v1/sp_registraties?merk=eq.__DIAGNOSE__",
+          {method:"DELETE", headers:{apikey:SB_KEY, Authorization:"Bearer "+SB_KEY}});
+        zet("Testrij opgeruimd", "ok", "database is weer schoon");
+      } else {
+        zet("Registratie opslaan", "nee", "status "+r.status+" — "+t.slice(0,160));
+      }
+    }catch(e){
+      zet("Registratie opslaan", "nee", e.name+": "+e.message);
+    }
+  } else {
+    zet("Registratie opslaan", "wacht", "overgeslagen, lezen lukte al niet");
+  }
+
+  // 7. service worker / oude versie in de cache
+  if("serviceWorker" in navigator){
+    const regs = await navigator.serviceWorker.getRegistrations().catch(()=>[]);
+    zet("Service worker", regs.length?"let":"ok",
+        regs.length? regs.length+" geregistreerd — kan een oude versie tonen; gebruik de knop hieronder" : "geen (schoon)");
+  } else {
+    zet("Service worker", "ok", "niet beschikbaar op dit protocol");
+  }
+  const namen = (window.caches ? await caches.keys().catch(()=>[]) : []);
+  zet("Caches", namen.length?"let":"ok", namen.length? namen.join(", ") : "leeg");
+
+  // conclusie
+  const f = n => tests.find(t=>t.naam===n);
+  if(f("Producten lezen").vlag==="ok"){
+    slot("<b>De verbinding werkt hier.</b> Als de app zelf het niet doet op ditzelfde adres, dan toont hij een oude versie uit de cache. Klik hieronder op opruimen en herlaad de app.");
+  } else if(!fetchEigen || inFrame){
+    slot("<b>De omgeving blokkeert het, niet de app.</b> fetch is aangepast of de pagina staat in een iframe-sandbox. Open de app op een echte URL (Cloudflare Pages of Netlify) in een eigen tabblad — daar werkt het wel.");
+  } else if(prot==="file:"){
+    slot("<b>Je opent het bestand rechtstreeks van je computer.</b> Zet de map op Cloudflare Pages of Netlify en open die URL.");
+  } else if(f("Internet bereikbaar").vlag!=="ok"){
+    slot("<b>Dit toestel heeft geen internet.</b> Check wifi of mobiele data.");
+  } else if(!sbOk){
+    slot("<b>Supabase is niet bereikbaar.</b> Mogelijk staat het project gepauzeerd, of een netwerkfilter van de winkel blokkeert het. Probeer het op mobiele data.");
+  } else {
+    slot("<b>Supabase antwoordt, maar de tabellen niet.</b> Stuur me de melding bij 'Producten lezen'.");
+  }
+})();
+</script>
+
+<div class="card">
+  <b style="font-size:14px">Oude versie opruimen</b>
+  <p style="font-size:13.5px;color:#5b6775;margin:6px 0 12px">Verwijdert de service worker en alle caches van deze site. Daarna de app herladen.</p>
+  <button onclick="opruimen()">Service worker en cache wissen</button>
+  <script>
+  async function opruimen(){
+    try{
+      if("serviceWorker" in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for(const r of regs) await r.unregister();
+      }
+      if(window.caches){
+        for(const k of await caches.keys()) await caches.delete(k);
+      }
+      alert("Opgeruimd. Open index.html en doe één harde refresh.");
+    }catch(e){ alert("Mislukt: "+e.message); }
+  }
+  </script>
+</div>
+</body>
+</html>
